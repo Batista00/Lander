@@ -1,0 +1,31 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "preview": "Preview",
+    "publish": "Publish",
+    "close": "Close"
+  },
+  "landing": {
+    "addComponent": "Add Component",
+    "editComponent": "Edit Component",
+    "publishPage": "Publish Page",
+    "publishing": "Publishing...",
+    "publishSuccess": "Page published successfully",
+    "publishError": "Error publishing page",
+    "componentReordered": "Component reordered",
+    "componentAdded": "Component added",
+    "componentUpdated": "Component updated",
+    "customDomain": "Custom Domain",
+    "domainInstructions": "Enter the domain you want to use for your landing page"
+  },
+  "errors": {
+    "pageNotFound": "Page not found",
+    "loadError": "Error loading page",
+    "permissionDenied": "Permission denied",
+    "unknownError": "An unknown error occurred"
+  }
+}

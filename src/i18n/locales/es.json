@@ -1,0 +1,31 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "add": "Agregar",
+    "preview": "Vista Previa",
+    "publish": "Publicar",
+    "close": "Cerrar"
+  },
+  "landing": {
+    "addComponent": "Agregar Componente",
+    "editComponent": "Editar Componente",
+    "publishPage": "Publicar Página",
+    "publishing": "Publicando...",
+    "publishSuccess": "Página publicada correctamente",
+    "publishError": "Error al publicar la página",
+    "componentReordered": "Componente reordenado",
+    "componentAdded": "Componente agregado",
+    "componentUpdated": "Componente actualizado",
+    "customDomain": "Dominio Personalizado",
+    "domainInstructions": "Ingresa el dominio que deseas usar para tu landing page"
+  },
+  "errors": {
+    "pageNotFound": "Página no encontrada",
+    "loadError": "Error al cargar la página",
+    "permissionDenied": "Permiso denegado",
+    "unknownError": "Ocurrió un error desconocido"
+  }
+}

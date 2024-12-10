@@ -1,0 +1,24 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Función para verificar si el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Reglas para imágenes
+    match /images/{imageId} {
+      // Permitir lectura pública de imágenes (necesario para páginas publicadas)
+      allow read: if true;
+      
+      // Permitir subida de imágenes a usuarios autenticados
+      allow create: if isAuthenticated()
+                   && request.resource.size < 5 * 1024 * 1024  // Máximo 5MB
+                   && request.resource.contentType.matches('image/.*');  // Solo imágenes
+      
+      // Permitir eliminación a usuarios autenticados
+      allow delete: if isAuthenticated();
+    }
+  }
+}

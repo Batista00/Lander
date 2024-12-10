@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Función para verificar si el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Función para verificar si el usuario es dueño del documento
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Reglas para la colección templates
+    match /templates/{templateId} {
+      // Cualquiera puede leer templates
+      allow read: if true;
+      // Solo usuarios autenticados pueden crear
+      allow create: if isAuthenticated();
+      // Solo el vendedor puede actualizar o eliminar
+      allow update, delete: if isAuthenticated() && 
+                           isOwner(resource.data.sellerId);
+    }
+
+    // Reglas para la colección orders
+    match /orders/{orderId} {
+      // Solo el comprador y vendedor pueden ver la orden
+      allow read: if isAuthenticated() && 
+                 (isOwner(resource.data.buyerId) || 
+                  isOwner(resource.data.sellerId));
+      // Solo usuarios autenticados pueden crear órdenes
+      allow create: if isAuthenticated();
+      // Solo el vendedor puede actualizar el estado
+      allow update: if isAuthenticated() && 
+                   isOwner(resource.data.sellerId);
+    }
+    
+    // Reglas para la colección landing_pages
+    match /landing_pages/{landingId} {
+      // Permitir lectura si el usuario está autenticado
+      allow read: if isAuthenticated();
+      // Permitir creación si el usuario está autenticado
+      allow create: if isAuthenticated();
+      // Permitir actualización si el usuario está autenticado y es dueño
+      allow update: if isAuthenticated() && isOwner(resource.data.userId);
+      // Permitir eliminación si el usuario está autenticado y es dueño
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+
+    // Reglas para analytics
+    match /analytics/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Reglas para user_profiles
+    match /user_profiles/{userId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isOwner(userId);
+    }
+  }
+}
