@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Plus, Eye, Save, Globe, ArrowLeft, Loader2, Check, History, Pencil, Trash2, Copy, Undo, Redo, ExternalLink, GripVertical } from 'lucide-react';
 import { landingPageService } from '@/services/landingPageService';
 import { toast } from 'react-hot-toast';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui/input';
 import { Layout } from 'lucide-react';
 import { Edit } from 'lucide-react';
 import cn from 'classnames';
