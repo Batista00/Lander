@@ -10,19 +10,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+  },
   server: {
     port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true
-      },
-      '/uploads': {
-        target: 'http://localhost:3001',
-        changeOrigin: true
-      }
-    },
-    // Esto es importante para que las rutas funcionen correctamente
-    historyApiFallback: true,
-  },
+  }
 });
