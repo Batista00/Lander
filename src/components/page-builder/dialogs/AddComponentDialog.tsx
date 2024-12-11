@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Search, Star, Crown } from 'lucide-react';
@@ -142,13 +142,15 @@ export function AddComponentDialog({
         <div className="space-y-4">
           <div className="flex gap-2">
             <div className="flex-1">
-              <Input
-                placeholder="Buscar componentes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
-                prefix={<Search className="w-4 h-4 text-gray-400" />}
-              />
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar componentes..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9"
+                />
+              </div>
             </div>
             <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
               <TabsList>
