@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"npx tsx watch src/server/index.ts\"",
-    "build": "vite build",
+    "build": "CI=false vite build --emptyOutDir",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
@@ -97,6 +97,7 @@
     "jsdom": "^25.0.1",
     "nodemon": "^2.0.22",
     "postcss": "^8.4.35",
+    "rollup": "3.29.4",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "tsx": "^3.14.0",
