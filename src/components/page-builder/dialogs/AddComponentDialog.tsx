@@ -7,13 +7,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { Search, Star, Crown } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
 
 interface AddComponentDialogProps {
   open: boolean;
@@ -27,7 +26,7 @@ const COMPONENT_TYPES = [
     id: 'topbar',
     name: 'Top Bar',
     description: 'Barra superior con información importante',
-    icon: Star,
+    icon: Search,
     category: 'basic',
     tags: ['navegación', 'header'],
     isPremium: false,
@@ -36,7 +35,7 @@ const COMPONENT_TYPES = [
     id: 'header',
     name: 'Header',
     description: 'Encabezado principal con navegación',
-    icon: Star,
+    icon: Search,
     category: 'basic',
     tags: ['navegación', 'menu'],
     isPremium: false,
@@ -45,7 +44,7 @@ const COMPONENT_TYPES = [
     id: 'hero',
     name: 'Hero',
     description: 'Sección principal destacada',
-    icon: Star,
+    icon: Search,
     category: 'basic',
     tags: ['principal', 'destacado'],
     isPremium: false,
@@ -54,7 +53,7 @@ const COMPONENT_TYPES = [
     id: 'features',
     name: 'Features',
     description: 'Muestra tus servicios o características principales',
-    icon: Star,
+    icon: Search,
     category: 'basic',
     tags: ['servicios', 'features'],
     isPremium: false,
@@ -63,7 +62,7 @@ const COMPONENT_TYPES = [
     id: 'services',
     name: 'Services',
     description: 'Lista detallada de servicios',
-    icon: Star,
+    icon: Search,
     category: 'premium',
     tags: ['servicios', 'ofertas'],
     isPremium: true,
@@ -72,7 +71,7 @@ const COMPONENT_TYPES = [
     id: 'testimonials',
     name: 'Testimonials',
     description: 'Testimonios de clientes satisfechos',
-    icon: Star,
+    icon: Search,
     category: 'premium',
     tags: ['testimonios', 'reviews'],
     isPremium: true,
@@ -81,7 +80,7 @@ const COMPONENT_TYPES = [
     id: 'pricing',
     name: 'Pricing',
     description: 'Planes y precios de tus servicios',
-    icon: Star,
+    icon: Search,
     category: 'premium',
     tags: ['precios', 'planes'],
     isPremium: true,
@@ -90,7 +89,7 @@ const COMPONENT_TYPES = [
     id: 'contact',
     name: 'Contact',
     description: 'Formulario de contacto',
-    icon: Star,
+    icon: Search,
     category: 'basic',
     tags: ['contacto', 'formulario'],
     isPremium: false,
@@ -122,7 +121,7 @@ export function AddComponentDialog({
 
   const handleAddComponent = (componentType: string, isPremium: boolean) => {
     if (isPremium && !isPremiumUser) {
-      toast.error('Esta es una característica premium. Por favor, actualiza tu plan para acceder.');
+      // toast.error('Esta es una característica premium. Por favor, actualiza tu plan para acceder.');
       return;
     }
     onAdd(componentType);
@@ -164,23 +163,21 @@ export function AddComponentDialog({
           <ScrollArea className="h-[400px] pr-4">
             <div className="grid grid-cols-2 gap-4">
               {filteredComponents.map((component) => (
-                <button
+                <Button
                   key={component.id}
                   onClick={() => handleAddComponent(component.id, component.isPremium)}
                   className="flex flex-col items-start p-4 rounded-lg border border-gray-200 hover:border-blue-500 transition-colors"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <component.icon className="w-5 h-5 text-blue-500" />
                     <span className="font-medium">{component.name}</span>
                     {component.isPremium && (
-                      <Badge variant="secondary">
-                        <Crown className="w-3 h-3 mr-1" />
+                      <Badge variant="premium" className="text-xs">
                         Premium
                       </Badge>
                     )}
                   </div>
                   <p className="text-sm text-gray-500">{component.description}</p>
-                </button>
+                </Button>
               ))}
             </div>
           </ScrollArea>

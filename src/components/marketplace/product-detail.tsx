@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Star, Heart, Share2, Eye, ShoppingCart } from "lucide-react";
-import Image from "next/image";
+import Image from 'next/image';
 
 interface ProductDetailProps {
   product: {

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { ScrollArea } from "@/components/ui/ScrollArea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Layout, Grid, Sparkles, Crown, Lock, Globe, Save, Image, Type, Phone } from 'lucide-react';
 
 // Interfaces base para todos los componentes
@@ -301,6 +301,18 @@ export const EditComponentDialog: React.FC<EditComponentDialogProps> = ({
 
   const { id, type, content } = component;
 
+  const handleImageDelete = (image: string, index: number) => {
+    // Implementación de la función
+  };
+
+  const handleTestimonialDelete = (testimonial: { id: string; text: string; author: string; role?: string; image?: string; rating?: number }, index: number) => {
+    // Implementación de la función
+  };
+
+  const handleServiceDelete = (service: { id: string; icon?: string; title: string; description: string; link?: string }, index: number) => {
+    // Implementación de la función
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[900px] h-[80vh]">
@@ -348,6 +360,7 @@ export const EditComponentDialog: React.FC<EditComponentDialogProps> = ({
                           <Input defaultValue={service.title} />
                           <Label>Descripción</Label>
                           <Input defaultValue={service.description} />
+                          <Button onClick={() => handleServiceDelete(service, index)}>Eliminar</Button>
                         </div>
                       ))}
                     </>
@@ -360,6 +373,7 @@ export const EditComponentDialog: React.FC<EditComponentDialogProps> = ({
                       <Input defaultValue={component.content.description} />
                       <Label>Imagen</Label>
                       <Input defaultValue={component.content.image} />
+                      <Button onClick={() => handleImageDelete(component.content.image, 0)}>Eliminar</Button>
                     </>
                   )}
                   {component.type === 'contact' && (
@@ -389,6 +403,7 @@ export const EditComponentDialog: React.FC<EditComponentDialogProps> = ({
                           <Input defaultValue={testimonial.text} />
                           <Label>Autor</Label>
                           <Input defaultValue={testimonial.author} />
+                          <Button onClick={() => handleTestimonialDelete(testimonial, index)}>Eliminar</Button>
                         </div>
                       ))}
                     </>
@@ -406,6 +421,7 @@ export const EditComponentDialog: React.FC<EditComponentDialogProps> = ({
                           <Input defaultValue={image.url} />
                           <Label>Alt</Label>
                           <Input defaultValue={image.alt} />
+                          <Button onClick={() => handleImageDelete(image.url, index)}>Eliminar</Button>
                         </div>
                       ))}
                     </>

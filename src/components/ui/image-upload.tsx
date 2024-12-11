@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Button } from "./Button";
+import { Button } from "./button";
 import { ImagePlus, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Rocket, ArrowRight, Layout, BarChart3, Users } from 'lucide-react';
 
 export function Home() {

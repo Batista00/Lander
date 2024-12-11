@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Rocket, Store } from 'lucide-react';
 
 export function Navbar() {

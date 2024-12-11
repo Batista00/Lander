@@ -1,5 +1,5 @@
 import { usePremiumStore } from '../../modules/premium/PremiumManager';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/button';
 
 export function PremiumFeatures() {
   const { features, upgradeToPremiun, isPremium } = usePremiumStore();

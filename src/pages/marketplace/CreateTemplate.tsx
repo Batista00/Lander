@@ -14,7 +14,7 @@ import {
   OutlinedInput,
   SelectChangeEvent
 } from '@mui/material';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, storage } from '@/lib/firebase';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';

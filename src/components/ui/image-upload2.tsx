@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UploadCloud, X } from 'lucide-react';
-import { Button } from './Button';
+import { Button } from './button';
 
 interface ImageUploadProps {
   onImageUpload: (file: File) => Promise<string>;
