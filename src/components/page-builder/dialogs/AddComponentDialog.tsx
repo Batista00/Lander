@@ -6,15 +6,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/Dialog';
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/Button';
-import { ScrollArea } from '@/components/ui/ScrollArea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { AddComponentDialogProps } from '../interfaces/ComponentInterfaces';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui/input';
 import { Search, Star, Crown } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { toast } from 'react-hot-toast';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const COMPONENT_TYPES = [
   {
