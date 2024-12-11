@@ -7,16 +7,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/Dialog';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
-import { Badge } from '@/components/ui/Badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Globe, Star, X, Loader2, Check, Copy } from 'lucide-react';
-import { landingPageService } from '@/services/landingPageService';
 import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
+import { landingPageService } from '@/services/landingPageService';
 
 interface PublishDialogProps {
   open: boolean;

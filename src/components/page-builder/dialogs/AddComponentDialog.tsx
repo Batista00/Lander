@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Dialog,
+  dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -65,7 +65,7 @@ const COMPONENT_TYPES = [
     id: 'services',
     name: 'Servicios',
     description: 'Muestra tus servicios o características principales',
-    icon: '⚡',
+    icon: '�?,
     category: 'basic',
     tags: ['servicios', 'features'],
     isPremium: false,
@@ -74,7 +74,7 @@ const COMPONENT_TYPES = [
     id: 'features',
     name: 'Características',
     description: 'Lista las características principales de tu producto o servicio',
-    icon: '✨',
+    icon: '�?,
     category: 'basic',
     tags: ['features', 'lista'],
     isPremium: false,
@@ -137,7 +137,7 @@ const COMPONENT_TYPES = [
     id: 'faq',
     name: 'FAQ Interactivo',
     description: 'Preguntas frecuentes con animaciones y búsqueda',
-    icon: '❓',
+    icon: '�?,
     category: 'premium',
     tags: ['faq', 'preguntas', 'ayuda'],
     isPremium: true,
@@ -177,7 +177,7 @@ export const AddComponentDialog: React.FC<AddComponentDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[900px]">
         <DialogHeader>
           <DialogTitle className="text-2xl">Galería de Componentes</DialogTitle>
@@ -261,6 +261,6 @@ export const AddComponentDialog: React.FC<AddComponentDialogProps> = ({
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+    </dialog>
   );
 };
