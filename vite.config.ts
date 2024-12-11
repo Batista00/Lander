@@ -8,11 +8,43 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-    }
+    },
+    dedupe: ['react', 'react-dom'],
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: [
+            'react',
+            'react-dom',
+            'react-router-dom',
+            'react-beautiful-dnd',
+            'react-hot-toast',
+            'framer-motion',
+            'i18next',
+            'react-i18next',
+            'firebase'
+          ]
+        }
+      }
+    }
+  },
+  optimizeDeps: {
+    include: [
+      'react-beautiful-dnd',
+      'react-hot-toast',
+      'framer-motion',
+      'i18next',
+      'react-i18next',
+      'firebase'
+    ]
   },
   server: {
     port: 5173,
