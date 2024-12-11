@@ -12,7 +12,7 @@ import { toast } from 'react-hot-toast';
 import { Input } from '@/components/ui/input';
 import { Layout } from 'lucide-react';
 import { Edit } from 'lucide-react';
-import cn from 'classnames';
+import { clsx } from 'clsx';
 import { Tooltip } from '@/components/ui/Tooltip';
 
 export function getDefaultContentForType(type: string) {
@@ -636,7 +636,7 @@ export const PageBuilder: React.FC = () => {
   };
 
   return (
-    <div className={cn("h-screen flex flex-col bg-gray-50")}>
+    <div className={clsx("h-screen flex flex-col bg-gray-50")}>
       <div className="flex items-center justify-between p-2 border-b bg-[#1e293b] text-white">
         <div className="flex items-center gap-2">
           <Button
@@ -684,7 +684,7 @@ export const PageBuilder: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={togglePreview}
-              className={cn("h-7 px-2 text-white", {
+              className={clsx("h-7 px-2 text-white", {
                 "bg-[#334155]": previewMode
               })}
             >
@@ -695,7 +695,7 @@ export const PageBuilder: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={toggleSplitView}
-              className={cn("h-7 px-2 text-white", {
+              className={clsx("h-7 px-2 text-white", {
                 "bg-[#334155]": splitView
               })}
             >
@@ -770,11 +770,11 @@ export const PageBuilder: React.FC = () => {
         </div>
       </div>
 
-      <div className={cn("flex-1 flex", {
+      <div className={clsx("flex-1 flex", {
         "flex-row": splitView
       })}>
         {(!previewMode || splitView) && (
-          <div className={cn("flex-1 overflow-auto", {
+          <div className={clsx("flex-1 overflow-auto", {
             "border-r": splitView,
             "max-w-4xl mx-auto w-full": !splitView
           })}>
@@ -818,7 +818,7 @@ export const PageBuilder: React.FC = () => {
         )}
         
         {(previewMode || splitView) && (
-          <div className={cn("flex-1 overflow-auto bg-gray-50")}>
+          <div className={clsx("flex-1 overflow-auto bg-gray-50")}>
             <div className="max-w-5xl mx-auto">
               {components.map((component) => (
                 <ComponentRenderer

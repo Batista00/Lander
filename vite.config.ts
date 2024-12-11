@@ -30,7 +30,8 @@ export default defineConfig({
             'framer-motion',
             'i18next',
             'react-i18next',
-            'firebase'
+            'firebase',
+            'clsx'
           ]
         }
       }
@@ -43,7 +44,8 @@ export default defineConfig({
       'framer-motion',
       'i18next',
       'react-i18next',
-      'firebase'
+      'firebase',
+      'clsx'
     ]
   },
   server: {

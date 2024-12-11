@@ -9,7 +9,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { bgColors, textColors } from '@/lib/colors';
-import cn from 'classnames';
+import { clsx } from 'clsx';
 
 interface HeaderEditorProps {
   data?: {
