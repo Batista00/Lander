@@ -1,10 +1,10 @@
 import React from 'react';
 import { EditorSection } from '../editor/EditorSection';
 import { FormField, Input } from '../editor/FormField';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
-import { Switch } from '@/components/ui/Switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Service {
   id: string;

@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Layout } from 'lucide-react';
 import { Edit } from 'lucide-react';
 import { clsx } from 'clsx';
-import { Tooltip } from '@/components/ui/Tooltip';
+import { Tooltip } from '@/components/ui/tooltip';
 
 export function getDefaultContentForType(type: string) {
   switch (type) {

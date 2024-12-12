@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { HeroProps } from '../interfaces/ComponentInterfaces';
 
 export const Hero: React.FC<HeroProps> = ({

@@ -7,7 +7,7 @@ import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { ColorPicker } from '@/components/ui/color-picker';
-import { ImageUpload } from '@/components/ui/ImageUpload';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { bgColors, textColors } from '@/lib/colors';
 import { clsx } from 'clsx';
 

@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { ColorPicker } from '@/components/ui/color-picker';
-import { ImageUpload } from '@/components/ui/ImageUpload';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { toast } from 'sonner';
 import { storageService } from '@/services/storageService';
 import { bgColors, textColors } from '@/lib/colors';

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useLandingStore } from '../../store/landingStore';
 import toast from 'react-hot-toast';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface SidebarMenuProps {
 }

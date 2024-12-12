@@ -5,7 +5,7 @@ import { Component } from '@/types/landing';
 import { HeadingComponent } from './components/HeadingComponent';
 import { TextComponent } from './components/TextComponent';
 import { ImageComponent } from './components/ImageComponent';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Edit, Copy, Trash2 } from 'lucide-react';
 
 interface SortableComponentProps {
