@@ -2,7 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Facebook, Instagram, Twitter, Menu, X, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/button';
 import { useState } from 'react';
 
 interface HeaderProps {
