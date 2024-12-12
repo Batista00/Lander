@@ -5,7 +5,7 @@ import { ComponentRenderer } from './ComponentRenderer';
 import { AddComponentDialog } from './dialogs/AddComponentDialog';
 import { EditComponentDialog } from './dialogs/EditComponentDialog';
 import { PublishDialog } from './dialogs/PublishDialog';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Plus, Eye, Save, Globe, ArrowLeft, Loader2, Check, History, Pencil, Trash2, Copy, Undo, Redo, ExternalLink, GripVertical } from 'lucide-react';
 import { landingPageService } from '@/services/landingPageService';
 import { toast } from 'react-hot-toast';
@@ -663,7 +663,7 @@ export const PageBuilder: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => setIsAddDialogOpen(true)}
-              className="h-7 px-2 text-white hover:bg-[#334155]"
+              className="h-7 text-white hover:bg-[#334155]"
             >
               <Plus className="w-3 h-3 mr-1" />
               Añadir
@@ -673,7 +673,7 @@ export const PageBuilder: React.FC = () => {
               size="sm"
               onClick={handlePasteComponent}
               disabled={!clipboardComponent}
-              className="h-7 px-2 text-white hover:bg-[#334155] disabled:text-gray-500"
+              className="h-7 text-white hover:bg-[#334155] disabled:text-gray-500"
             >
               <Copy className="w-3 h-3" />
             </Button>
@@ -684,7 +684,7 @@ export const PageBuilder: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={togglePreview}
-              className={clsx("h-7 px-2 text-white", {
+              className={clsx("h-7 text-white", {
                 "bg-[#334155]": previewMode
               })}
             >
@@ -695,7 +695,7 @@ export const PageBuilder: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={toggleSplitView}
-              className={clsx("h-7 px-2 text-white", {
+              className={clsx("h-7 text-white", {
                 "bg-[#334155]": splitView
               })}
             >
@@ -706,7 +706,7 @@ export const PageBuilder: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => window.open(`/p/${pageId}`, '_blank')}
-              className="h-7 px-2 text-white hover:bg-[#334155]"
+              className="h-7 text-white hover:bg-[#334155]"
             >
               <ExternalLink className="w-3 h-3" />
             </Button>
@@ -718,7 +718,7 @@ export const PageBuilder: React.FC = () => {
               size="sm"
               onClick={handleUndo}
               disabled={historyIndex <= 0}
-              className="h-7 px-2 text-white hover:bg-[#334155] disabled:text-gray-500"
+              className="h-7 text-white hover:bg-[#334155] disabled:text-gray-500"
             >
               <Undo className="w-3 h-3" />
             </Button>
@@ -727,7 +727,7 @@ export const PageBuilder: React.FC = () => {
               size="sm"
               onClick={handleRedo}
               disabled={historyIndex >= history.length - 1}
-              className="h-7 px-2 text-white hover:bg-[#334155] disabled:text-gray-500"
+              className="h-7 text-white hover:bg-[#334155] disabled:text-gray-500"
             >
               <Redo className="w-3 h-3" />
             </Button>
