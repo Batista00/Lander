@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentcolor" stroke-width="0.5" class="w-full h-full absolute inset-0">
+  <path d="M0 .5H31.5V32"/>
+  <path d="M0 4.5H31.5V32"/>
+  <path d="M0 8.5H31.5V32"/>
+  <path d="M0 12.5H31.5V32"/>
+  <path d="M0 16.5H31.5V32"/>
+  <path d="M0 20.5H31.5V32"/>
+  <path d="M0 24.5H31.5V32"/>
+  <path d="M0 28.5H31.5V32"/>
+  <path d="M4.5 0V31.5H32"/>
+  <path d="M8.5 0V31.5H32"/>
+  <path d="M12.5 0V31.5H32"/>
+  <path d="M16.5 0V31.5H32"/>
+  <path d="M20.5 0V31.5H32"/>
+  <path d="M24.5 0V31.5H32"/>
+  <path d="M28.5 0V31.5H32"/>
+</svg>
