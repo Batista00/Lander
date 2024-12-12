@@ -19,6 +19,7 @@ export default defineConfig({
       transformMixedEsModules: true
     },
     rollupOptions: {
+      external: ['recharts'],
       output: {
         manualChunks: {
           vendor: [
@@ -48,7 +49,8 @@ export default defineConfig({
             '@radix-ui/react-tooltip',
             'class-variance-authority',
             'lucide-react',
-            'sonner'
+            'sonner',
+            'recharts'
           ]
         }
       }
@@ -82,7 +84,8 @@ export default defineConfig({
       '@radix-ui/react-tooltip',
       'class-variance-authority',
       'lucide-react',
-      'sonner'
+      'sonner',
+      'recharts'
     ]
   },
   server: {
