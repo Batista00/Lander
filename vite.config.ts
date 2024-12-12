@@ -31,7 +31,8 @@ export default defineConfig({
             'i18next',
             'react-i18next',
             'firebase',
-            'clsx'
+            'clsx',
+            'zustand'
           ]
         }
       }
@@ -45,7 +46,8 @@ export default defineConfig({
       'i18next',
       'react-i18next',
       'firebase',
-      'clsx'
+      'clsx',
+      'zustand'
     ]
   },
   server: {
