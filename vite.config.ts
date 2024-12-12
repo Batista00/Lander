@@ -32,7 +32,23 @@ export default defineConfig({
             'react-i18next',
             'firebase',
             'clsx',
-            'zustand'
+            'zustand',
+            '@dnd-kit/core',
+            '@dnd-kit/sortable',
+            '@dnd-kit/utilities',
+            '@hello-pangea/dnd',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-label',
+            '@radix-ui/react-scroll-area',
+            '@radix-ui/react-select',
+            '@radix-ui/react-separator',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+            'class-variance-authority',
+            'lucide-react',
+            'sonner'
           ]
         }
       }
@@ -40,6 +56,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
       'react-beautiful-dnd',
       'react-hot-toast',
       'framer-motion',
@@ -47,7 +66,23 @@ export default defineConfig({
       'react-i18next',
       'firebase',
       'clsx',
-      'zustand'
+      'zustand',
+      '@dnd-kit/core',
+      '@dnd-kit/sortable',
+      '@dnd-kit/utilities',
+      '@hello-pangea/dnd',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-label',
+      '@radix-ui/react-scroll-area',
+      '@radix-ui/react-select',
+      '@radix-ui/react-separator',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-tooltip',
+      'class-variance-authority',
+      'lucide-react',
+      'sonner'
     ]
   },
   server: {

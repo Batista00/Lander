@@ -1,6 +1,15 @@
-export { Button } from './button';
-export { Badge } from './badge';
+export { Button, buttonVariants } from './button';
+export { Badge, badgeVariants } from './badge';
 export { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './dialog';
 export { ScrollArea } from './scroll-area';
 export { Input } from './input';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
+export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './card';
+export { Label } from './label';
+export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator } from './select';
+export { Switch } from './switch';
+export { Separator } from './separator';
+export { Tooltip, TooltipProvider } from './tooltip';
+export { RadioGroup, RadioGroupItem } from './radio-group';
+export { ImageUpload } from './image-upload';
+export { ColorPicker } from './color-picker';
