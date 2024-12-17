@@ -1,81 +1,114 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin, Github } from 'lucide-react';
+import { 
+  Twitter, Linkedin, Github, 
+  Blocks, BookOpen, LifeBuoy,
+  Building2, Layout, ShoppingBag,
+  Palette
+} from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo y descripción */}
-          <div className="col-span-1">
-            <Link to="/" className="flex items-center space-x-2">
-              <span className="font-bold text-2xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-500">LANDER</span>
+    <footer className="relative pt-24 pb-12 overflow-hidden border-t border-white/10 bg-black">
+      <div className="container max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+          {/* Logo and Description */}
+          <div className="col-span-2">
+            <Link to="/" className="flex items-center space-x-2 mb-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] rounded-lg blur opacity-50"></div>
+                <Blocks className="w-8 h-8 text-white relative" />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-[#00E5B0] via-[#FF1F8C] to-[#00D1FF] text-transparent bg-clip-text">
+                LANDER
+              </span>
             </Link>
-            <p className="mt-4 text-blue-100">
-              Crea landing pages profesionales en minutos con nuestra plataforma intuitiva.
+            <p className="text-gray-400 text-sm mb-6">
+              Plataforma líder en creación de landing pages. Diseña, publica y optimiza tus páginas sin escribir código.
             </p>
-          </div>
-
-          {/* Enlaces rápidos */}
-          <div>
-            <h3 className="font-semibold text-white mb-4">Enlaces Rápidos</h3>
-            <ul className="space-y-2">
-              <li><Link to="/marketplace" className="text-blue-100 hover:text-white">Marketplace</Link></li>
-              <li><Link to="/templates" className="text-blue-100 hover:text-white">Templates</Link></li>
-              <li><Link to="/pricing" className="text-blue-100 hover:text-white">Precios</Link></li>
-              <li><Link to="/blog" className="text-blue-100 hover:text-white">Blog</Link></li>
-            </ul>
-          </div>
-
-          {/* Soporte */}
-          <div>
-            <h3 className="font-semibold text-white mb-4">Soporte</h3>
-            <ul className="space-y-2">
-              <li><Link to="/help" className="text-blue-100 hover:text-white">Centro de Ayuda</Link></li>
-              <li><Link to="/documentation" className="text-blue-100 hover:text-white">Documentación</Link></li>
-              <li><Link to="/contact" className="text-blue-100 hover:text-white">Contacto</Link></li>
-              <li><Link to="/status" className="text-blue-100 hover:text-white">Estado del Sistema</Link></li>
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h3 className="font-semibold text-white mb-4">Legal</h3>
-            <ul className="space-y-2">
-              <li><Link to="/privacy" className="text-blue-100 hover:text-white">Privacidad</Link></li>
-              <li><Link to="/terms" className="text-blue-100 hover:text-white">Términos</Link></li>
-              <li><Link to="/security" className="text-blue-100 hover:text-white">Seguridad</Link></li>
-              <li><Link to="/cookies" className="text-blue-100 hover:text-white">Cookies</Link></li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Redes sociales y copyright */}
-        <div className="mt-12 pt-8 border-t border-blue-400">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex space-x-6 mb-4 md:mb-0">
-              <a href="#" className="text-blue-100 hover:text-white">
-                <Facebook className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-blue-100 hover:text-white">
-                <Twitter className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-blue-100 hover:text-white">
-                <Instagram className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-blue-100 hover:text-white">
-                <Linkedin className="h-6 w-6" />
-              </a>
-              <a href="#" className="text-blue-100 hover:text-white">
-                <Github className="h-6 w-6" />
-              </a>
+            <div className="flex space-x-4">
+              {[
+                { icon: Twitter, href: "https://twitter.com/lander" },
+                { icon: Linkedin, href: "https://linkedin.com/company/lander" },
+                { icon: Github, href: "https://github.com/lander" }
+              ].map((social, index) => (
+                <a
+                  key={index}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <social.icon className="w-5 h-5 text-gray-400 hover:text-[#00E5B0]" />
+                </a>
+              ))}
             </div>
-            <p className="text-blue-100">
-              {new Date().getFullYear()} LANDER. Todos los derechos reservados.
-            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h4 className="text-white font-semibold mb-4">Producto</h4>
+            <ul className="space-y-2">
+              <li><Link to="/app/builder" className="text-gray-400 hover:text-[#00E5B0] text-sm flex items-center gap-2">
+                <Layout className="w-4 h-4" />Constructor
+              </Link></li>
+              <li><Link to="/app/marketplace" className="text-gray-400 hover:text-[#00E5B0] text-sm flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4" />Marketplace
+              </Link></li>
+              <li><Link to="/app/templates" className="text-gray-400 hover:text-[#00E5B0] text-sm flex items-center gap-2">
+                <Palette className="w-4 h-4" />Plantillas
+              </Link></li>
+              <li><Link to="/pricing" className="text-gray-400 hover:text-[#00E5B0] text-sm flex items-center gap-2">
+                <Building2 className="w-4 h-4" />Precios
+              </Link></li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h4 className="text-white font-semibold mb-4">Empresa</h4>
+            <ul className="space-y-2">
+              <li><Link to="/about" className="text-gray-400 hover:text-[#00E5B0] text-sm">Sobre Nosotros</Link></li>
+              <li><Link to="/customers" className="text-gray-400 hover:text-[#00E5B0] text-sm">Clientes</Link></li>
+              <li><Link to="/contact" className="text-gray-400 hover:text-[#00E5B0] text-sm">Contacto</Link></li>
+              <li><Link to="/careers" className="text-gray-400 hover:text-[#00E5B0] text-sm">Empleo</Link></li>
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h4 className="text-white font-semibold mb-4">Recursos</h4>
+            <ul className="space-y-2">
+              <li><Link to="/docs" className="text-gray-400 hover:text-[#00E5B0] text-sm flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />Documentación
+              </Link></li>
+              <li><Link to="/help" className="text-gray-400 hover:text-[#00E5B0] text-sm flex items-center gap-2">
+                <LifeBuoy className="w-4 h-4" />Ayuda
+              </Link></li>
+              <li><Link to="/blog" className="text-gray-400 hover:text-[#00E5B0] text-sm">Blog</Link></li>
+              <li><Link to="/community" className="text-gray-400 hover:text-[#00E5B0] text-sm">Comunidad</Link></li>
+            </ul>
           </div>
         </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 mt-12 border-t border-white/10">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="text-sm text-gray-400">
+              {new Date().getFullYear()} LANDER. Todos los derechos reservados.
+            </div>
+            <div className="flex space-x-6">
+              <Link to="/privacy" className="text-sm text-gray-400 hover:text-[#00E5B0]">Privacidad</Link>
+              <Link to="/terms" className="text-sm text-gray-400 hover:text-[#00E5B0]">Términos</Link>
+              <Link to="/cookies" className="text-sm text-gray-400 hover:text-[#00E5B0]">Cookies</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Background Elements */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute left-0 bottom-0 w-96 h-96 bg-[#00E5B0]/5 rounded-full filter blur-3xl"></div>
+        <div className="absolute right-0 top-0 w-96 h-96 bg-[#FF1F8C]/5 rounded-full filter blur-3xl"></div>
       </div>
     </footer>
   );

@@ -11,9 +11,39 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    // Reglas para la colección users
+    match /users/{userId} {
+      // Cualquiera puede leer perfiles públicos
+      allow read: if true;
+      // Solo el propio usuario puede escribir su perfil
+      allow write: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Reglas para developers
+    match /developers/{developerId} {
+      // Cualquiera puede leer perfiles de desarrolladores
+      allow read: if true;
+      // Solo el propio desarrollador puede actualizar su perfil
+      // O se permite crear un nuevo perfil si el usuario está autenticado y es su propio perfil
+      allow create: if isAuthenticated() && isOwner(developerId);
+      allow update: if isAuthenticated() && isOwner(developerId);
+      allow delete: if isAuthenticated() && isOwner(developerId);
+    }
+
     // Reglas para la colección templates
     match /templates/{templateId} {
       // Cualquiera puede leer templates
+      allow read: if true;
+      // Solo usuarios autenticados pueden crear
+      allow create: if isAuthenticated();
+      // Solo el vendedor puede actualizar o eliminar
+      allow update, delete: if isAuthenticated() && 
+                           isOwner(resource.data.sellerId);
+    }
+
+    // Reglas para la colección marketplace_templates
+    match /marketplace_templates/{templateId} {
+      // Cualquiera puede leer templates publicados
       allow read: if true;
       // Solo usuarios autenticados pueden crear
       allow create: if isAuthenticated();
@@ -34,7 +64,28 @@ service cloud.firestore {
       allow update: if isAuthenticated() && 
                    isOwner(resource.data.sellerId);
     }
-    
+
+    // Reglas para la colección reviews
+    match /reviews/{reviewId} {
+      // Cualquiera puede leer reviews
+      allow read: if true;
+      // Solo usuarios autenticados que compraron pueden crear reviews
+      allow create: if isAuthenticated();
+      // Solo el autor puede actualizar o eliminar su review
+      allow update, delete: if isAuthenticated() && 
+                           isOwner(resource.data.userId);
+    }
+
+    // Reglas para la colección favorites
+    match /favorites/{favoriteId} {
+      // Solo el usuario puede ver sus favoritos
+      allow read: if isAuthenticated() && 
+                 isOwner(resource.data.userId);
+      // Solo usuarios autenticados pueden gestionar sus favoritos
+      allow write: if isAuthenticated() && 
+                  isOwner(request.resource.data.userId);
+    }
+
     // Reglas para la colección landing_pages
     match /landing_pages/{landingId} {
       // Permitir lectura si el usuario está autenticado
@@ -54,8 +105,43 @@ service cloud.firestore {
 
     // Reglas para user_profiles
     match /user_profiles/{userId} {
+      // Cualquiera puede ver los perfiles de usuario
       allow read: if true;
+      // Solo el propio usuario puede actualizar su perfil
       allow write: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Reglas para user_ratings
+    match /user_ratings/{ratingId} {
+      // Cualquiera puede leer las calificaciones
+      allow read: if true;
+      // Solo usuarios autenticados que hayan interactuado pueden crear calificaciones
+      allow create: if isAuthenticated() && 
+                   (exists(/databases/$(database)/documents/orders/{orderId}) &&
+                    get(/databases/$(database)/documents/orders/{orderId}).data.buyerId == request.auth.uid ||
+                    get(/databases/$(database)/documents/orders/{orderId}).data.sellerId == request.auth.uid);
+      // Solo el autor puede actualizar o eliminar su calificación
+      allow update, delete: if isAuthenticated() && isOwner(resource.data.ratedBy);
+    }
+
+    // Reglas para promotions
+    match /promotions/{promotionId} {
+      // Cualquiera puede ver las promociones activas
+      allow read: if true;
+      // Los vendedores pueden crear sus propias promociones
+      allow create: if isAuthenticated() && 
+                   request.resource.data.sellerId == request.auth.uid;
+      // Los vendedores pueden actualizar y eliminar sus propias promociones
+      allow update, delete: if isAuthenticated() && 
+                           resource.data.sellerId == request.auth.uid;
+    }
+
+    // Reglas para settings
+    match /settings/{settingId} {
+      // Todos pueden leer las configuraciones
+      allow read: if true;
+      // Solo usuarios autenticados pueden actualizar las configuraciones
+      allow write: if isAuthenticated();
     }
   }
 }

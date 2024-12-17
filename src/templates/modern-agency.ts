@@ -1,0 +1,227 @@
+export const modernAgencyTemplate = {
+  name: 'Modern Agency',
+  thumbnail: '/templates/modern-agency.png',
+  components: [
+    {
+      id: crypto.randomUUID(),
+      type: 'modern-hero',
+      order: 0,
+      data: {
+        title: 'Transformamos Ideas en Experiencias Digitales',
+        subtitle: 'Diseño y desarrollo web de alto impacto',
+        description: 'Creamos soluciones digitales innovadoras que impulsan el crecimiento de tu negocio. Nuestro equipo de expertos combina creatividad y tecnología para entregar resultados excepcionales.',
+        primaryCTA: {
+          text: 'Comienza tu proyecto',
+          url: '#contact',
+        },
+        secondaryCTA: {
+          text: 'Ver portfolio',
+          url: '#projects',
+        },
+        illustration: '/illustrations/hero.svg',
+      },
+    },
+    {
+      id: crypto.randomUUID(),
+      type: 'modern-services',
+      order: 1,
+      data: {
+        title: 'Nuestros Servicios',
+        subtitle: 'Soluciones integrales para tu presencia digital',
+        services: [
+          {
+            icon: 'ph-palette',
+            title: 'Diseño UI/UX',
+            description: 'Creamos interfaces intuitivas y atractivas que cautivan a tus usuarios y mejoran la experiencia de uso.',
+            link: '#',
+          },
+          {
+            icon: 'ph-code',
+            title: 'Desarrollo Web',
+            description: 'Desarrollamos sitios web y aplicaciones modernas utilizando las últimas tecnologías y mejores prácticas.',
+            link: '#',
+          },
+          {
+            icon: 'ph-shopping-cart',
+            title: 'E-Commerce',
+            description: 'Implementamos soluciones de comercio electrónico que impulsan tus ventas y optimizan la conversión.',
+            link: '#',
+          },
+          {
+            icon: 'ph-chart-line-up',
+            title: 'Marketing Digital',
+            description: 'Estrategias de marketing digital que aumentan tu visibilidad y atraen clientes potenciales.',
+            link: '#',
+          },
+          {
+            icon: 'ph-device-mobile',
+            title: 'Apps Móviles',
+            description: 'Desarrollo de aplicaciones móviles nativas y multiplataforma para iOS y Android.',
+            link: '#',
+          },
+          {
+            icon: 'ph-cloud',
+            title: 'Cloud Solutions',
+            description: 'Implementación y gestión de soluciones en la nube para optimizar tus operaciones.',
+            link: '#',
+          },
+        ],
+      },
+    },
+    {
+      id: crypto.randomUUID(),
+      type: 'modern-stats',
+      order: 2,
+      data: {
+        background: 'dark',
+        stats: [
+          {
+            icon: 'ph-users',
+            value: 200,
+            label: 'Clientes Satisfechos',
+            suffix: '+',
+          },
+          {
+            icon: 'ph-check-circle',
+            value: 500,
+            label: 'Proyectos Completados',
+            suffix: '+',
+          },
+          {
+            icon: 'ph-trophy',
+            value: 15,
+            label: 'Años de Experiencia',
+            suffix: '+',
+          },
+          {
+            icon: 'ph-star',
+            value: 98,
+            label: 'Satisfacción',
+            suffix: '%',
+          },
+        ],
+      },
+    },
+    {
+      id: crypto.randomUUID(),
+      type: 'modern-projects',
+      order: 3,
+      data: {
+        title: 'Nuestro Portfolio',
+        subtitle: 'Descubre algunos de nuestros mejores trabajos',
+        categories: ['Todos', 'Web', 'Mobile', 'E-Commerce', 'Branding'],
+        projects: [
+          {
+            image: '/portfolio/project1.jpg',
+            title: 'E-Commerce de Moda',
+            category: 'E-Commerce',
+            description: 'Plataforma de comercio electrónico para una marca de moda premium.',
+            link: '#',
+          },
+          {
+            image: '/portfolio/project2.jpg',
+            title: 'App de Delivery',
+            category: 'Mobile',
+            description: 'Aplicación móvil para servicio de entrega de comida a domicilio.',
+            link: '#',
+          },
+          {
+            image: '/portfolio/project3.jpg',
+            title: 'Sitio Web Corporativo',
+            category: 'Web',
+            description: 'Sitio web moderno para una empresa de tecnología.',
+            link: '#',
+          },
+          {
+            image: '/portfolio/project4.jpg',
+            title: 'Rediseño de Marca',
+            category: 'Branding',
+            description: 'Renovación completa de identidad visual para startup.',
+            link: '#',
+          },
+          {
+            image: '/portfolio/project5.jpg',
+            title: 'Plataforma Educativa',
+            category: 'Web',
+            description: 'Sistema de gestión de aprendizaje en línea.',
+            link: '#',
+          },
+          {
+            image: '/portfolio/project6.jpg',
+            title: 'App de Finanzas',
+            category: 'Mobile',
+            description: 'Aplicación de gestión financiera personal.',
+            link: '#',
+          },
+        ],
+      },
+    },
+    {
+      id: crypto.randomUUID(),
+      type: 'modern-testimonials',
+      order: 4,
+      data: {
+        title: 'Lo que dicen nuestros clientes',
+        subtitle: 'Testimonios de quienes han confiado en nosotros',
+        testimonials: [
+          {
+            content: 'Trabajar con este equipo fue una experiencia excepcional. Su profesionalismo y atención al detalle superaron nuestras expectativas.',
+            author: 'María González',
+            position: 'CEO',
+            company: 'Fashion Store',
+            avatar: '/testimonials/avatar1.jpg',
+            rating: 5,
+          },
+          {
+            content: 'Lograron transformar nuestra visión en una realidad digital impresionante. El resultado final fue mejor de lo que imaginábamos.',
+            author: 'Carlos Rodríguez',
+            position: 'Director de Marketing',
+            company: 'Tech Solutions',
+            avatar: '/testimonials/avatar2.jpg',
+            rating: 5,
+          },
+          {
+            content: 'Su enfoque innovador y su capacidad para entender nuestras necesidades hicieron que el proceso fuera muy fluido y exitoso.',
+            author: 'Ana Martínez',
+            position: 'Fundadora',
+            company: 'Creative Studio',
+            avatar: '/testimonials/avatar3.jpg',
+            rating: 5,
+          },
+        ],
+      },
+    },
+    {
+      id: crypto.randomUUID(),
+      type: 'modern-contact',
+      order: 5,
+      data: {
+        title: 'Contacta con nosotros',
+        subtitle: 'Estamos aquí para ayudarte a hacer realidad tu próximo proyecto',
+        contactInfo: [
+          {
+            icon: 'ph-envelope',
+            label: 'Email',
+            value: 'contacto@tuempresa.com',
+            link: 'mailto:contacto@tuempresa.com',
+          },
+          {
+            icon: 'ph-phone',
+            label: 'Teléfono',
+            value: '+1 234 567 890',
+            link: 'tel:+1234567890',
+          },
+          {
+            icon: 'ph-map-pin',
+            label: 'Ubicación',
+            value: 'Calle Principal 123, Ciudad',
+          },
+        ],
+        formTitle: '¿Listo para empezar?',
+        formSubtitle: 'Cuéntanos sobre tu proyecto y nos pondremos en contacto contigo lo antes posible.',
+        submitButtonText: 'Enviar mensaje',
+        successMessage: '¡Gracias por contactarnos! Te responderemos pronto.',
+      },
+    },
+  ],
+};

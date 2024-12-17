@@ -1,95 +1,145 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import { Layout } from './components/Layout';
-import { ProtectedRoute } from './components/ProtectedRoute';
 import { Home } from './pages/Home';
 import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
+import { ResetPassword } from './pages/auth/reset-password';
 import { Dashboard } from './pages/dashboard';
 import { DashboardHome } from './pages/dashboard/DashboardHome';
-import { LandingPages } from './pages/dashboard/LandingPages';
-import { PageBuilder } from './components/page-builder/PageBuilder';
-import { PublishedLanding } from './components/published/PublishedLanding';
-import { Marketplace } from './pages/marketplace/Marketplace';
-import { TemplateDetails } from './pages/marketplace/TemplateDetails';
-import { Preview } from './pages/preview/Preview';
-import { PublishedPage } from './pages/preview/PublishedPage';
-import { theme } from './theme/mui-theme';
+import { useAuth } from './contexts/AuthContext';
 import { Toaster } from 'sonner';
-import { TooltipProvider } from './components/ui/Tooltip';
-import { MarketplaceLayout } from './components/marketplace/MarketplaceLayout';
-import { Categories } from './pages/marketplace/Categories';
-import { Wishlist } from './pages/marketplace/Wishlist';
-import { Cart } from './pages/marketplace/Cart';
-import { Checkout } from './pages/marketplace/Checkout';
-import { OrderHistory } from './pages/marketplace/OrderHistory';
-import { SellerProfile } from './pages/marketplace/SellerProfile';
-import { SellerDashboard } from './pages/marketplace/SellerDashboard';
-import { MyTemplates } from './pages/marketplace/MyTemplates';
-import { CreateTemplate } from './pages/marketplace/CreateTemplate';
-import { MarketplaceAnalytics } from './pages/marketplace/MarketplaceAnalytics';
-import { MarketplaceSettings } from './pages/marketplace/MarketplaceSettings';
-import { AuthProvider } from './contexts/AuthContext';
-import { Purchases } from './pages/marketplace/Purchases';
+import { MarketplaceProvider } from './contexts/MarketplaceContext';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { es } from 'date-fns/locale';
+
+// Marketplace
+import ProductGrid from './pages/marketplace/ProductGrid';
+import MyPurchases from './pages/marketplace/MyPurchases';
 import { Favorites } from './pages/marketplace/Favorites';
+import SellerProducts from './pages/marketplace/SellerProducts';
 import { ProductDetails } from './pages/marketplace/ProductDetails';
+import { SellerProfile } from './pages/marketplace/SellerProfile';
+import { DeveloperProfile } from './pages/marketplace/DeveloperProfile';
+import { MarketplaceSettings } from './pages/marketplace/MarketplaceSettings';
+import { MarketplaceAnalytics } from './pages/marketplace/MarketplaceAnalytics';
+import { MarketplacePromotions } from './pages/marketplace/MarketplacePromotions';
+import { MarketplaceCommunity } from './pages/marketplace/MarketplaceCommunity';
+import { MarketplaceReputation } from './pages/marketplace/MarketplaceReputation';
+
+// Landing Pages
+import LandingPages from './pages/landing/LandingPages';
+import PageBuilder from './pages/landing/PageBuilder';
+import PreviewPage from './pages/landing/PreviewPage';
+import PublishedLanding from './pages/landing/PublishedLanding';
+import LandingTemplates from './pages/landing/LandingTemplates';
+import LandingDrafts from './pages/landing/LandingDrafts';
+import LandingArchived from './pages/landing/LandingArchived';
+
+// Componente para proteger rutas
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/auth/login" replace />;
+  }
+
+  return <>{children}</>;
+}
 
 function App() {
   return (
-    <TooltipProvider>
-      <Toaster position="top-right" richColors />
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Home />} />
-              <Route path="login" element={<Login />} />
-              <Route path="register" element={<Register />} />
-              
-              {/* Protected Routes */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="dashboard" element={<Dashboard />}>
-                  <Route index element={<DashboardHome />} />
-                  <Route path="landing-pages/*" element={<LandingPages />} />
-                  <Route path="landing-pages/editor/:pageId" element={<PageBuilder />} />
-                  
-                  {/* Rutas del Marketplace */}
-                  <Route path="marketplace" element={<MarketplaceLayout />}>
-                    <Route index element={<Marketplace />} />
-                    <Route path="template/:id" element={<TemplateDetails />} />
-                    <Route path="categories" element={<Categories />} />
-                    <Route path="categories/:category" element={<Marketplace />} />
-                    <Route path="wishlist" element={<Wishlist />} />
-                    <Route path="cart" element={<Cart />} />
-                    <Route path="checkout" element={<Checkout />} />
-                    <Route path="orders" element={<OrderHistory />} />
-                    <Route path="purchases" element={<Purchases />} />
-                    <Route path="favorites" element={<Favorites />} />
-                    <Route path="sell" element={<Navigate to="/dashboard/marketplace/seller-dashboard" replace />} />
-                    <Route path="seller/:id" element={<SellerProfile />} />
-                    <Route path="seller-dashboard" element={<SellerDashboard />} />
-                    <Route path="seller-dashboard/templates" element={<MyTemplates />} />
-                    <Route path="seller-dashboard/templates/create" element={<CreateTemplate />} />
-                    <Route path="seller-dashboard/templates/edit/:id" element={<CreateTemplate />} />
-                    <Route path="seller-dashboard/analytics" element={<MarketplaceAnalytics />} />
-                    <Route path="seller-dashboard/settings" element={<MarketplaceSettings />} />
-                    <Route path="template/:id" element={<ProductDetails />} />
-                  </Route>
-                </Route>
-              </Route>
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+      <MarketplaceProvider>
+        <Toaster position="top-right" expand={true} richColors />
+        <Routes>
+          {/* Rutas públicas */}
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="auth">
+              <Route path="login" element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              } />
+              <Route path="register" element={
+                <PublicRoute>
+                  <Register />
+                </PublicRoute>
+              } />
+              <Route path="reset-password" element={
+                <PublicRoute>
+                  <ResetPassword />
+                </PublicRoute>
+              } />
+            </Route>
+            <Route path="p/:id" element={<PublishedLanding />} />
+          </Route>
+
+          {/* Rutas protegidas del dashboard */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }>
+            <Route index element={<DashboardHome />} />
+            
+            {/* Landing Pages */}
+            <Route path="landing-pages">
+              <Route index element={<LandingPages />} />
+              <Route path="new" element={<PageBuilder />} />
+              <Route path=":id" element={<PageBuilder />} />
+              <Route path="templates" element={<LandingTemplates />} />
+              <Route path="drafts" element={<LandingDrafts />} />
+              <Route path="archived" element={<LandingArchived />} />
+              <Route path="preview/:id" element={<PreviewPage />} />
             </Route>
 
-            {/* Rutas públicas */}
-            <Route path="/landing/:id" element={<PublishedLanding />} />
-            <Route path="/preview/:pageId" element={<Preview />} />
-            <Route path="/p/:pageId" element={<PublishedPage />} />
-          </Routes>
-        </AuthProvider>
-      </ThemeProvider>
-    </TooltipProvider>
+            {/* Marketplace */}
+            <Route path="marketplace">
+              <Route index element={<ProductGrid />} />
+              <Route path="my-purchases" element={<MyPurchases />} />
+              <Route path="favorites" element={<Favorites />} />
+              <Route path="my-products">
+                <Route index element={<SellerProducts />} />
+                <Route path="new" element={<SellerProducts />} />
+              </Route>
+              <Route path="product/:id" element={<ProductDetails />} />
+              <Route path="developer/:id" element={<DeveloperProfile />} />
+              <Route path="seller/:id" element={<SellerProfile />} />
+              <Route path="analytics" element={<MarketplaceAnalytics />} />
+              <Route path="promotions" element={<MarketplacePromotions />} />
+              <Route path="community" element={<MarketplaceCommunity />} />
+              <Route path="reputation" element={<MarketplaceReputation />} />
+              <Route path="settings" element={<MarketplaceSettings />} />
+            </Route>
+          </Route>
+
+          {/* Ruta 404 */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </MarketplaceProvider>
+    </LocalizationProvider>
   );
+}
+
+// Componente para rutas públicas que redirigen si el usuario está autenticado
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
 }
 
 export default App;

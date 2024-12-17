@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -9,6 +8,8 @@ import {
   Heart,
   Store,
   ShoppingCart,
+  Settings,
+  Package
 } from "lucide-react";
 
 const mainNavItems = [
@@ -29,7 +30,7 @@ const mainNavItems = [
       },
       {
         title: "Mis Compras",
-        href: "/dashboard/marketplace/purchases",
+        href: "/dashboard/marketplace/my-purchases",
         icon: ShoppingCart,
       },
       {
@@ -38,8 +39,13 @@ const mainNavItems = [
         icon: Heart,
       },
       {
+        title: "Mis Productos",
+        href: "/dashboard/marketplace/my-products",
+        icon: Package,
+      },
+      {
         title: "Vender",
-        href: "/dashboard/marketplace/seller",
+        href: "/dashboard/marketplace/my-products/new",
         icon: Store,
       }
     ]
@@ -47,17 +53,17 @@ const mainNavItems = [
 ];
 
 export function MainNav() {
-  const pathname = usePathname();
+  const location = useLocation();
 
   return (
     <nav className="flex flex-col space-y-1">
       {mainNavItems.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive = location.pathname === item.href;
         
         return (
           <div key={item.href}>
             <Link
-              href={item.href}
+              to={item.href}
               className={cn(
                 "group flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
                 isActive ? "bg-accent" : "transparent",
@@ -76,12 +82,12 @@ export function MainNav() {
             {item.children && (
               <div className="ml-6 mt-1 space-y-1">
                 {item.children.map((child) => {
-                  const isChildActive = pathname === child.href;
+                  const isChildActive = location.pathname === child.href;
                   
                   return (
                     <Link
                       key={child.href}
-                      href={child.href}
+                      to={child.href}
                       className={cn(
                         "group flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
                         isChildActive ? "bg-accent" : "transparent",

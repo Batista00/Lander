@@ -1,35 +1,45 @@
-import { extendTheme } from '@chakra-ui/react';
+import { createTheme } from '@mui/material/styles';
 
-const theme = extendTheme({
-  styles: {
-    global: {
-      body: {
-        bg: 'white',
-        color: 'gray.800',
-      },
+export const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#00E5B0',
+      contrastText: '#fff',
+    },
+    secondary: {
+      main: '#FF1F8C',
+      contrastText: '#fff',
+    },
+    background: {
+      default: '#000000',
+      paper: '#111111',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: '#B0B0B0',
     },
   },
-  colors: {
-    brand: {
-      50: '#f0f9ff',
-      100: '#e0f2fe',
-      200: '#bae6fd',
-      300: '#7dd3fc',
-      400: '#38bdf8',
-      500: '#0ea5e9',
-      600: '#0284c7',
-      700: '#0369a1',
-      800: '#075985',
-      900: '#0c4a6e',
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    button: {
+      textTransform: 'none',
     },
   },
   components: {
-    Button: {
-      defaultProps: {
-        colorScheme: 'brand',
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: '8px',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
       },
     },
   },
 });
-
-export default theme;

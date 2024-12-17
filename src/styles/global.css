@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap');
+
+:root {
+  --color-primary: #00E5B0;
+  --color-secondary: #FF1F8C;
+  --color-accent: #00D1FF;
+  --color-background: #0B0F19;
+}
+
+@layer base {
+  body {
+    @apply text-white font-sans;
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--color-background);
+  }
+  
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-transparent bg-clip-text;
+  }
+
+  .text-gradient-alt {
+    @apply bg-gradient-to-r from-[#00E5B0] via-[#FF1F8C] to-[#00D1FF] text-transparent bg-clip-text;
+  }
+
+  .border-gradient {
+    @apply border border-transparent bg-gradient-to-r from-[#00E5B0]/20 to-[#FF1F8C]/20;
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+
+  .glass-panel {
+    @apply backdrop-blur-xl bg-white/5;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      45deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: glass-shine 8s infinite;
+  }
+
+  .pattern-background {
+    background-size: 30px 30px;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+    animation: pattern-move 15s linear infinite;
+  }
+
+  @keyframes pattern-move {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 30px 30px;
+    }
+  }
+
+  .sparkle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background-color: white;
+    opacity: 0;
+    animation: sparkle-animation 1.5s ease-in-out infinite;
+  }
+
+  @keyframes sparkle-animation {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0);
+      opacity: 0;
+    }
+  }
+}
+
+@keyframes glass-shine {
+  0% {
+    left: -100%;
+  }
+  50%, 100% {
+    left: 100%;
+  }
+}

@@ -1,18 +1,39 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Card } from '../../components/ui/card';
+import { Blocks } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { FirebaseError } from 'firebase/app';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email('Correo electrónico inválido'),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
   rememberMe: z.boolean().optional(),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
+
+const getFirebaseErrorMessage = (error: FirebaseError) => {
+  switch (error.code) {
+    case 'auth/invalid-credential':
+      return 'Correo electrónico o contraseña incorrectos';
+    case 'auth/user-not-found':
+      return 'No existe una cuenta con este correo electrónico';
+    case 'auth/wrong-password':
+      return 'Contraseña incorrecta';
+    case 'auth/too-many-requests':
+      return 'Demasiados intentos fallidos. Por favor, intente más tarde';
+    case 'auth/user-disabled':
+      return 'Esta cuenta ha sido deshabilitada';
+    default:
+      return 'Error al iniciar sesión. Por favor, intente de nuevo';
+  }
+};
 
 export function Login() {
   const [error, setError] = useState('');
@@ -31,52 +52,66 @@ export function Login() {
       await signIn(data.email, data.password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in');
+      if (err instanceof FirebaseError) {
+        setError(getFirebaseErrorMessage(err));
+      } else {
+        setError('Error al iniciar sesión. Por favor, intente de nuevo');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="rounded-md shadow-sm -space-y-px">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0B0F19] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-col items-center mb-8">
+        <Link to="/" className="flex items-center space-x-2 group mb-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] rounded-lg blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
+            <Blocks className="w-8 h-8 text-white relative" />
+          </div>
+          <span className="text-2xl font-bold bg-gradient-to-r from-[#00E5B0] via-[#FF1F8C] to-[#00D1FF] text-transparent bg-clip-text">
+            LANDER
+          </span>
+        </Link>
+        <h2 className="text-3xl font-bold text-white">
+          Bienvenido de nuevo
+        </h2>
+        <p className="mt-2 text-gray-400">
+          Inicia sesión para continuar
+        </p>
+      </div>
+
+      <Card className="max-w-md w-full bg-[#1A1F2E]/50 backdrop-blur-xl border-white/10">
+        <form className="p-6 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          {error && (
+            <div className="p-3 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
+              {error}
+            </div>
+          )}
+          
+          <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
+              <Input
                 {...register('email')}
-                id="email"
                 type="email"
-                autoComplete="email"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder="Correo electrónico"
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-400"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
               )}
             </div>
+
             <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
+              <Input
                 {...register('password')}
-                id="password"
                 type="password"
-                autoComplete="current-password"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder="Contraseña"
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-400"
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
               )}
             </div>
           </div>
@@ -85,42 +120,42 @@ export function Login() {
             <div className="flex items-center">
               <input
                 {...register('rememberMe')}
-                id="remember-me"
                 type="checkbox"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-[#00E5B0] focus:ring-[#00E5B0] focus:ring-offset-gray-900"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Remember me
+              <label className="ml-2 text-sm text-gray-300">
+                Recordarme
               </label>
             </div>
+            <Link
+              to="/auth/reset-password"
+              className="text-sm text-[#00E5B0] hover:text-[#00E5B0]/80"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
           </div>
-
-          {error && (
-            <div className="text-sm text-red-600 text-center">
-              {error}
-            </div>
-          )}
 
           <div>
             <Button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               disabled={isLoading}
+              className="w-full bg-gradient-to-r from-[#00E5B0] to-[#00D1FF] text-black font-semibold hover:opacity-90 transition-opacity"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </Button>
           </div>
 
-          <div className="text-sm text-center">
+          <div className="text-center text-sm text-gray-400">
+            ¿No tienes una cuenta?{' '}
             <Link
-              to="/register"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
+              to="/auth/register"
+              className="text-[#00E5B0] hover:text-[#00E5B0]/80"
             >
-              Don't have an account? Sign up
+              Regístrate
             </Link>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }

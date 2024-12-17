@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-import { getStorage } from 'firebase/storage';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { getAnalytics } from 'firebase/analytics';
 
 // Configuración de Firebase
@@ -15,6 +15,8 @@ const firebaseConfig = {
   measurementId: "G-RWBM2KGC4Z"
 };
 
+console.log('Inicializando Firebase con config:', firebaseConfig);
+
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 
@@ -23,5 +25,14 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+
+// Log del estado de autenticación
+auth.onAuthStateChanged((user) => {
+  console.log('Estado de autenticación:', user ? 'Usuario autenticado' : 'No autenticado');
+  if (user) {
+    console.log('ID del usuario:', user.uid);
+    console.log('Email:', user.email);
+  }
+});
 
 export { app, db, auth, storage, analytics };

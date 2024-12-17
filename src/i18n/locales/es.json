@@ -22,6 +22,14 @@
     "customDomain": "Dominio Personalizado",
     "domainInstructions": "Ingresa el dominio que deseas usar para tu landing page"
   },
+  "marketplace": {
+    "explore": "Explorar",
+    "myPurchases": "Mis Compras",
+    "favorites": "Favoritos",
+    "myProducts": "Mis Productos",
+    "settings": "Configuración",
+    "seller": "Vendedor"
+  },
   "errors": {
     "pageNotFound": "Página no encontrada",
     "loadError": "Error al cargar la página",

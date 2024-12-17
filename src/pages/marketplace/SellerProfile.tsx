@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Container,
-  Grid,
-  Paper,
   Typography,
   Box,
+  Paper,
+  Grid,
   Avatar,
   Button,
+  IconButton,
+  Divider,
   Chip,
   Rating,
-  Divider,
+  CircularProgress,
 } from '@mui/material';
 import {
   LocationOn,
@@ -19,13 +21,8 @@ import {
   LinkedIn,
   GitHub,
 } from '@mui/icons-material';
-
-interface SellerStats {
-  templates: number;
-  sales: number;
-  rating: number;
-  reviews: number;
-}
+import { db } from '../../lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface SellerInfo {
   id: string;
@@ -39,41 +36,68 @@ interface SellerInfo {
     linkedin?: string;
     github?: string;
   };
-  stats: SellerStats;
+  stats: {
+    templates: number;
+    sales: number;
+    rating: number;
+    reviews: number;
+  };
   skills: string[];
 }
 
-const mockSeller: SellerInfo = {
-  id: '1',
-  name: 'Alex Developer',
-  avatar: '/images/avatars/alex.jpg',
-  location: 'Buenos Aires, Argentina',
-  website: 'www.alexdev.com',
-  bio: 'Desarrollador Full Stack con más de 8 años de experiencia. Especializado en crear templates modernos y responsivos con las últimas tecnologías.',
-  socialLinks: {
-    twitter: 'https://twitter.com/alexdev',
-    linkedin: 'https://linkedin.com/in/alexdev',
-    github: 'https://github.com/alexdev',
-  },
-  stats: {
-    templates: 25,
-    sales: 1240,
-    rating: 4.8,
-    reviews: 156,
-  },
-  skills: [
-    'React',
-    'TypeScript',
-    'Material-UI',
-    'Responsive Design',
-    'Next.js',
-    'Tailwind CSS',
-  ],
-};
-
 export const SellerProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const seller = mockSeller; // En un caso real, cargaríamos los datos del vendedor usando el ID
+  const [seller, setSeller] = useState<SellerInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadSellerData = async () => {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const sellerDoc = await getDoc(doc(db, 'sellers', id));
+        
+        if (!sellerDoc.exists()) {
+          setError('Vendedor no encontrado');
+          return;
+        }
+
+        const sellerData = sellerDoc.data() as Omit<SellerInfo, 'id'>;
+        setSeller({ id: sellerDoc.id, ...sellerData });
+      } catch (err) {
+        console.error('Error loading seller data:', err);
+        setError('Error al cargar los datos del vendedor');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSellerData();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error || !seller) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Paper sx={{ p: 3, textAlign: 'center' }}>
+          <Typography color="error" variant="h6">
+            {error || 'No se pudo cargar el perfil del vendedor'}
+          </Typography>
+        </Paper>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -113,17 +137,17 @@ export const SellerProfile: React.FC = () => {
                     </Button>
                     <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
                       {seller.socialLinks.twitter && (
-                        <IconButton href={seller.socialLinks.twitter}>
+                        <IconButton href={seller.socialLinks.twitter} target="_blank">
                           <Twitter />
                         </IconButton>
                       )}
                       {seller.socialLinks.linkedin && (
-                        <IconButton href={seller.socialLinks.linkedin}>
+                        <IconButton href={seller.socialLinks.linkedin} target="_blank">
                           <LinkedIn />
                         </IconButton>
                       )}
                       {seller.socialLinks.github && (
-                        <IconButton href={seller.socialLinks.github}>
+                        <IconButton href={seller.socialLinks.github} target="_blank">
                           <GitHub />
                         </IconButton>
                       )}
@@ -188,19 +212,3 @@ export const SellerProfile: React.FC = () => {
     </Container>
   );
 };
-
-const IconButton: React.FC<{ href: string; children: React.ReactNode }> = ({ href, children }) => (
-  <Button
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    sx={{
-      minWidth: 'auto',
-      p: 1,
-      color: 'text.secondary',
-      '&:hover': { color: 'primary.main' },
-    }}
-  >
-    {children}
-  </Button>
-);

@@ -1,154 +1,236 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useMarketplace } from '../../contexts/MarketplaceContext';
 import {
   Container,
-  Typography,
-  Box,
-  Paper,
   Grid,
   Card,
   CardContent,
+  Typography,
+  Box,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Skeleton,
+  Alert,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
   TrendingUp,
   ShoppingCart,
-  Visibility,
+  Star,
   AttachMoney,
+  Group,
+  ArrowUpward,
+  ArrowDownward,
 } from '@mui/icons-material';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from 'recharts';
 
-interface AnalyticsSummary {
-  totalRevenue: number;
-  totalSales: number;
-  totalViews: number;
-  conversionRate: number;
-}
-
-interface TopTemplate {
-  id: string;
+interface StatCardProps {
   title: string;
-  sales: number;
-  revenue: number;
-  views: number;
-  conversionRate: number;
+  value: string | number;
+  trend: number;
+  icon: React.ReactNode;
 }
 
-const mockSummary: AnalyticsSummary = {
-  totalRevenue: 12599.99,
-  totalSales: 421,
-  totalViews: 15678,
-  conversionRate: 2.68,
-};
+export const MarketplaceAnalytics = () => {
+  const { analytics, loadAnalytics, loading, error } = useMarketplace();
+  const [timeRange, setTimeRange] = useState('7d');
 
-const mockTopTemplates: TopTemplate[] = [
-  {
-    id: '1',
-    title: 'Business Pro Template',
-    sales: 156,
-    revenue: 4679.44,
-    views: 3245,
-    conversionRate: 4.81,
-  },
-  {
-    id: '2',
-    title: 'E-commerce Starter',
-    sales: 98,
-    revenue: 4899.02,
-    views: 2156,
-    conversionRate: 4.55,
-  },
-  {
-    id: '3',
-    title: 'Portfolio Master',
-    sales: 87,
-    revenue: 2174.13,
-    views: 1987,
-    conversionRate: 4.38,
-  },
-];
+  useEffect(() => {
+    loadAnalytics(timeRange);
+  }, [loadAnalytics, timeRange]);
 
-export const MarketplaceAnalytics: React.FC = () => {
-  const StatCard = ({ title, value, icon }: {
-    title: string;
-    value: string;
-    icon: React.ReactNode;
-  }) => (
+  const StatCard = ({ title, value, trend, icon }: StatCardProps) => (
     <Card>
       <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 1, mr: 2 }}>
-            {icon}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Box>
+            <Typography color="text.secondary" gutterBottom>
+              {title}
+            </Typography>
+            <Typography variant="h4">
+              {value}
+            </Typography>
           </Box>
-          <Typography color="text.secondary">
-            {title}
+          {icon}
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {trend > 0 ? (
+            <ArrowUpward sx={{ color: 'success.main', mr: 1 }} />
+          ) : (
+            <ArrowDownward sx={{ color: 'error.main', mr: 1 }} />
+          )}
+          <Typography
+            variant="body2"
+            color={trend > 0 ? 'success.main' : 'error.main'}
+          >
+            {Math.abs(trend)}% vs periodo anterior
           </Typography>
         </Box>
-        <Typography variant="h4">
-          {value}
-        </Typography>
       </CardContent>
     </Card>
   );
 
+  if (error) {
+    return (
+      <Container sx={{ py: 4 }}>
+        <Alert severity="error">{error}</Alert>
+      </Container>
+    );
+  }
+
+  if (loading || !analytics?.data) {
+    return (
+      <Container sx={{ py: 4 }}>
+        <Grid container spacing={3}>
+          {Array.from(new Array(4)).map((_, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <Card>
+                <CardContent>
+                  <Skeleton variant="text" />
+                  <Skeleton variant="rectangular" height={60} />
+                  <Skeleton variant="text" width="60%" />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    );
+  }
+
+  const data = analytics.data;
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Analytics
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4">
+          Analytics del Marketplace
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Métricas y estadísticas de tus templates
-        </Typography>
+        <FormControl sx={{ minWidth: 200 }}>
+          <InputLabel>Periodo</InputLabel>
+          <Select
+            value={timeRange}
+            label="Periodo"
+            onChange={(e) => setTimeRange(e.target.value)}
+          >
+            <MenuItem value="7d">Últimos 7 días</MenuItem>
+            <MenuItem value="30d">Últimos 30 días</MenuItem>
+            <MenuItem value="90d">Últimos 90 días</MenuItem>
+            <MenuItem value="1y">Último año</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
 
-      <Grid container spacing={3}>
-        {/* Resumen de Estadísticas */}
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Ingresos Totales"
-            value={`$${mockSummary.totalRevenue.toLocaleString()}`}
-            icon={<AttachMoney />}
-          />
-        </Grid>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Ventas Totales"
-            value={mockSummary.totalSales.toString()}
-            icon={<ShoppingCart />}
+            value={`$${data.totalSales.toLocaleString()}`}
+            trend={data.salesTrend}
+            icon={<AttachMoney sx={{ fontSize: 40, color: 'primary.main' }} />}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="Vistas Totales"
-            value={mockSummary.totalViews.toLocaleString()}
-            icon={<Visibility />}
+            title="Órdenes"
+            value={data.totalOrders}
+            trend={data.ordersTrend}
+            icon={<ShoppingCart sx={{ fontSize: 40, color: 'primary.main' }} />}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="Tasa de Conversión"
-            value={`${mockSummary.conversionRate}%`}
-            icon={<TrendingUp />}
+            title="Calificación Promedio"
+            value={data.averageRating.toFixed(1)}
+            trend={data.ratingTrend}
+            icon={<Star sx={{ fontSize: 40, color: 'primary.main' }} />}
           />
         </Grid>
-
-        {/* Gráficos */}
-        <Grid item xs={12}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Ventas por Período
-            </Typography>
-            {/* Aquí iría un gráfico de ventas */}
-          </Paper>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Usuarios Totales"
+            value={data.totalUsers}
+            trend={data.usersTrend}
+            icon={<Group sx={{ fontSize: 40, color: 'primary.main' }} />}
+          />
         </Grid>
+      </Grid>
 
-        {/* Tabla de Templates más Vendidos */}
-        <Grid item xs={12}>
-          <Paper sx={{ p: 3 }}>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={8}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Ventas por Día
+              </Typography>
+              <Box sx={{ height: 300, width: '100%' }}>
+                {data.salesData.length > 0 ? (
+                  <ResponsiveContainer>
+                    <LineChart data={data.salesData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <RechartsTooltip />
+                      <Line type="monotone" dataKey="amount" stroke="#1976d2" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <Typography color="text.secondary">No hay datos disponibles</Typography>
+                  </Box>
+                )}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Órdenes por Día
+              </Typography>
+              <Box sx={{ height: 300, width: '100%' }}>
+                {data.ordersData.length > 0 ? (
+                  <ResponsiveContainer>
+                    <BarChart data={data.ordersData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <RechartsTooltip />
+                      <Bar dataKey="count" fill="#1976d2" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <Typography color="text.secondary">No hay datos disponibles</Typography>
+                  </Box>
+                )}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {data.topTemplates.length > 0 && (
+        <Card sx={{ mt: 3 }}>
+          <CardContent>
             <Typography variant="h6" gutterBottom>
               Templates Más Vendidos
             </Typography>
@@ -158,47 +240,21 @@ export const MarketplaceAnalytics: React.FC = () => {
                   <TableRow>
                     <TableCell>Template</TableCell>
                     <TableCell align="right">Ventas</TableCell>
-                    <TableCell align="right">Ingresos</TableCell>
-                    <TableCell align="right">Vistas</TableCell>
-                    <TableCell align="right">Conversión</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {mockTopTemplates.map((template) => (
+                  {data.topTemplates.map((template) => (
                     <TableRow key={template.id}>
                       <TableCell>{template.title}</TableCell>
                       <TableCell align="right">{template.sales}</TableCell>
-                      <TableCell align="right">${template.revenue.toFixed(2)}</TableCell>
-                      <TableCell align="right">{template.views.toLocaleString()}</TableCell>
-                      <TableCell align="right">{template.conversionRate}%</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </TableContainer>
-          </Paper>
-        </Grid>
-
-        {/* Gráfico de Fuentes de Tráfico */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Fuentes de Tráfico
-            </Typography>
-            {/* Aquí iría un gráfico de fuentes de tráfico */}
-          </Paper>
-        </Grid>
-
-        {/* Gráfico de Categorías Populares */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Categorías Populares
-            </Typography>
-            {/* Aquí iría un gráfico de categorías */}
-          </Paper>
-        </Grid>
-      </Grid>
+          </CardContent>
+        </Card>
+      )}
     </Container>
   );
 };

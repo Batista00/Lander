@@ -1,5 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
-import { db } from '@/lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { 
   collection, 
   doc, 
@@ -14,45 +13,26 @@ import {
   Timestamp,
   serverTimestamp
 } from 'firebase/firestore';
-import { useAuthStore } from '@/store/auth';
+import { v4 as uuidv4 } from 'uuid';
+import { domainService } from './domainService';
 
-interface Component {
-  id: string;
-  type: string;
-  data: Record<string, any>;
-  order: number;
-  visible?: boolean;
-}
+const COLLECTION_NAME = 'landing_pages';
+const COLLECTION_DOMAINS = 'domains';
 
 interface LandingPage {
-  id?: string;
+  id: string;
   name: string;
-  components: Component[];
-  published: boolean;
-  publishedUrl?: string;
+  components: any[];
+  status: 'draft' | 'published' | 'archived';
   userId: string;
-  customDomain?: string;
   createdAt: Date;
   updatedAt: Date;
-  theme?: {
-    primary: string;
-    secondary: string;
-    background: string;
-    text: string;
+  publishedAt?: Date;
+  publishConfig?: {
+    domain?: string;
+    subdomain?: string;
+    url: string;
   };
-  devicePreview?: string;
-  status?: 'draft' | 'published' | 'archived';
-  thumbnail?: string;
-}
-
-interface DomainValidation {
-  isValid: boolean;
-  error?: string;
-}
-
-interface UserPlan {
-  isPremium: boolean;
-  expiresAt?: Date;
 }
 
 class LandingPageError extends Error {
@@ -62,19 +42,12 @@ class LandingPageError extends Error {
   }
 }
 
-const COLLECTION_NAME = 'landing_pages';
-const COLLECTION_DOMAINS = 'domains';
-
 function getCurrentUser() {
-  const { user } = useAuthStore.getState();
-  if (!user?.uid && !user?.id) {
-    console.error('Usuario no autenticado:', user);
+  const user = auth.currentUser;
+  if (!user) {
     throw new LandingPageError('Usuario no autenticado', 'auth/not-authenticated');
   }
-  return {
-    ...user,
-    uid: user.uid || user.id
-  };
+  return user;
 }
 
 const convertTimestampToDate = (timestamp: any): Date => {
@@ -90,256 +63,15 @@ const convertTimestampToDate = (timestamp: any): Date => {
   return new Date();
 };
 
-const getUserPlan = async (userId: string): Promise<UserPlan> => {
-  try {
-    const userDoc = await getDoc(doc(db, 'users', userId));
-    if (!userDoc.exists()) {
-      return { isPremium: false };
-    }
-
-    const userData = userDoc.data();
-    return {
-      isPremium: userData.isPremium || false,
-      expiresAt: userData.premiumExpiresAt ? new Date(userData.premiumExpiresAt) : undefined
-    };
-  } catch (error) {
-    console.error('Error al obtener el plan del usuario:', error);
-    return { isPremium: false };
-  }
+const generateThumbnail = (components: any[]): string => {
+  return '/placeholder-landing.jpg';
 };
 
 const generatePublicUrl = (pageId: string, customDomain?: string): string => {
   if (customDomain) {
     return `https://${customDomain}`;
   }
-  return `${import.meta.env.VITE_PUBLIC_URL}/p/${pageId}`;
-};
-
-const validateDomain = async (domain: string): Promise<DomainValidation> => {
-  try {
-    if (!domain) {
-      return { isValid: false, error: 'El dominio es requerido' };
-    }
-
-    const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
-    if (!domainRegex.test(domain)) {
-      return { 
-        isValid: false, 
-        error: 'El formato del dominio no es válido' 
-      };
-    }
-
-    const domainsRef = collection(db, COLLECTION_DOMAINS);
-    const q = query(domainsRef, where('domain', '==', domain));
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      return { 
-        isValid: false, 
-        error: 'El dominio ya está en uso' 
-      };
-    }
-
-    const user = getCurrentUser();
-    const userPlan = await getUserPlan(user.uid);
-
-    if (!userPlan.isPremium) {
-      return { 
-        isValid: false, 
-        error: 'Necesitas una cuenta premium para usar dominios personalizados' 
-      };
-    }
-
-    return { isValid: true };
-  } catch (error) {
-    console.error('Error al validar el dominio:', error);
-    return { 
-      isValid: false, 
-      error: 'Error al validar el dominio' 
-    };
-  }
-};
-
-const getLandingPageById = async (id: string): Promise<LandingPage | null> => {
-  try {
-    console.log('Obteniendo landing page por ID:', id);
-    if (!id) {
-      console.error('ID no proporcionado');
-      throw new LandingPageError('ID no proporcionado', 'invalid-id');
-    }
-
-    const user = getCurrentUser();
-    console.log('Usuario actual:', user.uid);
-
-    const docRef = doc(db, COLLECTION_NAME, id);
-    console.log('Referencia del documento:', docRef.path);
-
-    const docSnap = await getDoc(docRef);
-    console.log('¿Existe el documento?:', docSnap.exists());
-
-    if (!docSnap.exists()) {
-      console.error('Landing page no encontrada');
-      throw new LandingPageError('Landing page no encontrada', 'not-found');
-    }
-
-    const data = docSnap.data();
-    console.log('Datos obtenidos:', data);
-
-    if (!data) {
-      console.error('Datos de landing page no válidos');
-      throw new LandingPageError('Datos de landing page no válidos', 'invalid-data');
-    }
-
-    // Verificar que la landing page pertenece al usuario actual
-    if (data.userId !== user.uid) {
-      console.error('Usuario no autorizado');
-      throw new LandingPageError('No tienes permiso para acceder a esta landing page', 'permission-denied');
-    }
-
-    const landingPage: LandingPage = {
-      ...data,
-      id: docSnap.id,
-      createdAt: convertTimestampToDate(data.createdAt),
-      updatedAt: convertTimestampToDate(data.updatedAt),
-      components: data.components || [],
-      theme: data.theme || {
-        primary: '#3B82F6',
-        secondary: '#10B981',
-        background: '#FFFFFF',
-        text: '#1F2937'
-      },
-      status: data.status || 'draft',
-      thumbnail: data.thumbnail || generateThumbnail(data.components)
-    };
-
-    console.log('Landing page procesada:', landingPage);
-    return landingPage;
-  } catch (error) {
-    console.error('Error detallado al obtener la landing page:', {
-      error,
-      message: error.message,
-      code: error.code,
-      stack: error.stack
-    });
-
-    if (error instanceof LandingPageError) {
-      throw error;
-    }
-    throw new LandingPageError('Error al obtener la landing page', 'unknown-error');
-  }
-};
-
-const getLandingPageByDomain = async (domain: string): Promise<LandingPage | null> => {
-  try {
-    const domainsRef = collection(db, COLLECTION_DOMAINS);
-    const q = query(domainsRef, where('domain', '==', domain));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      return null;
-    }
-
-    const domainDoc = querySnapshot.docs[0];
-    const { landingPageId } = domainDoc.data();
-
-    return getLandingPageById(landingPageId);
-  } catch (error) {
-    console.error('Error al obtener la landing page por dominio:', error);
-    throw new LandingPageError('Error al obtener la landing page', 'unknown-error');
-  }
-};
-
-const publishLandingPage = async (
-  id: string, 
-  domainType: 'default' | 'custom', 
-  customDomain?: string
-): Promise<LandingPage | null> => {
-  try {
-    const user = getCurrentUser();
-    const pageRef = doc(db, COLLECTION_NAME, id);
-    const pageDoc = await getDoc(pageRef);
-
-    if (!pageDoc.exists()) {
-      throw new Error('Landing page not found');
-    }
-
-    const pageData = pageDoc.data() as LandingPage;
-    const publishedUrl = customDomain || `${window.location.origin}/p/${id}`;
-
-    const updatedData = {
-      ...pageData,
-      published: true,
-      publishedUrl,
-      customDomain: customDomain || null,
-      updatedAt: serverTimestamp(),
-      status: 'published'
-    };
-
-    await updateDoc(pageRef, updatedData);
-
-    return updatedData;
-  } catch (error) {
-    console.error('Error publishing landing page:', error);
-    throw error;
-  }
-};
-
-const unpublishLandingPage = async (id: string): Promise<LandingPage | null> => {
-  try {
-    const user = getCurrentUser();
-    const landingPage = await getLandingPageById(id);
-
-    if (!landingPage) {
-      throw new LandingPageError('La landing page no existe', 'not-found');
-    }
-
-    if (landingPage.userId !== user.uid) {
-      throw new LandingPageError('No tienes permiso para despublicar esta landing page', 'permission-denied');
-    }
-
-    if (landingPage.customDomain) {
-      const domainsRef = collection(db, COLLECTION_DOMAINS);
-      const q = query(domainsRef, where('domain', '==', landingPage.customDomain));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        const domainDoc = querySnapshot.docs[0];
-        await deleteDoc(domainDoc.ref);
-      }
-    }
-
-    const updateData = {
-      published: false,
-      publishedUrl: null,
-      customDomain: null,
-      updatedAt: serverTimestamp()
-    };
-
-    return updateLandingPage(id, updateData);
-  } catch (error) {
-    if (error instanceof LandingPageError) {
-      throw error;
-    }
-    console.error('Error al despublicar la landing page:', error);
-    throw new LandingPageError('Error al despublicar la landing page', 'unknown-error');
-  }
-};
-
-const sanitizeComponent = (component: any) => {
-  const sanitized: any = {};
-  
-  // Only include non-undefined values
-  Object.keys(component).forEach(key => {
-    if (component[key] !== undefined) {
-      if (key === 'data' && typeof component[key] === 'object') {
-        sanitized[key] = sanitizeData(component[key]);
-      } else {
-        sanitized[key] = component[key];
-      }
-    }
-  });
-  
-  return sanitized;
+  return `${window.location.origin}/p/${pageId}`;
 };
 
 const sanitizeData = (data: any) => {
@@ -358,99 +90,28 @@ const sanitizeData = (data: any) => {
   return sanitized;
 };
 
-const updateLandingPage = async (
-  id: string,
-  data: Partial<LandingPage>
-): Promise<LandingPage | null> => {
-  try {
-    const docRef = doc(db, COLLECTION_NAME, id);
-    const docSnap = await getDoc(docRef);
-
-    if (!docSnap.exists()) {
-      throw new LandingPageError('Landing page no encontrada', 'not-found');
-    }
-
-    // Sanitize components before update
-    const updatedComponents = data.components?.map(component => 
-      sanitizeComponent(component)
-    ) || [];
-
-    const updateData = {
-      ...sanitizeData(data),
-      components: updatedComponents,
-      updatedAt: serverTimestamp()
-    };
-
-    console.log('Actualizando landing page:', {
-      id,
-      updateData: {
-        ...updateData,
-        components: updatedComponents.map(c => ({
-          id: c.id,
-          type: c.type,
-          data: c.data
-        }))
+const sanitizeComponent = (component: any) => {
+  const sanitized: any = {};
+  
+  Object.keys(component).forEach(key => {
+    if (component[key] !== undefined) {
+      if (key === 'data' && typeof component[key] === 'object') {
+        sanitized[key] = sanitizeData(component[key]);
+      } else {
+        sanitized[key] = component[key];
       }
-    });
-
-    await updateDoc(docRef, updateData);
-
-    // Obtener los datos actualizados
-    const updatedDoc = await getDoc(docRef);
-    const updatedData = updatedDoc.data() as LandingPage;
-
-    return {
-      ...updatedData,
-      id,
-      components: updatedComponents,
-      createdAt: convertTimestampToDate(updatedData.createdAt),
-      updatedAt: convertTimestampToDate(updatedData.updatedAt)
-    };
-  } catch (error) {
-    if (error instanceof LandingPageError) {
-      throw error;
     }
-    console.error('Error al actualizar la landing page:', error);
-    throw new LandingPageError('Error al actualizar la landing page', 'unknown-error');
-  }
-};
-
-const generateThumbnail = (components: any[]): string => {
-  // Por ahora, retornamos una imagen por defecto
-  return '/placeholder-landing.jpg';
-};
-
-const getPublishedPage = async (id: string): Promise<LandingPage | null> => {
-  try {
-    const docRef = doc(db, COLLECTION_NAME, id);
-    const docSnap = await getDoc(docRef);
-    
-    if (!docSnap.exists()) {
-      throw new LandingPageError('Página no encontrada', 'not-found');
-    }
-
-    const data = docSnap.data();
-    if (!data.published) {
-      throw new LandingPageError('Esta página no está publicada', 'not-published');
-    }
-
-    return {
-      components: data.components || [],
-      settings: data.settings || {},
-    };
-  } catch (error) {
-    console.error('Error al obtener la página publicada:', error);
-    throw error;
-  }
+  });
+  
+  return sanitized;
 };
 
 export const landingPageService = {
-  async getAllLandingPages(): Promise<LandingPage[]> {
+  async getAllLandingPages() {
     try {
       const user = getCurrentUser();
       const landingsRef = collection(db, COLLECTION_NAME);
       
-      // Primero obtenemos los documentos por userId
       const q = query(
         landingsRef, 
         where('userId', '==', user.uid)
@@ -460,7 +121,6 @@ export const landingPageService = {
       const querySnapshot = await getDocs(q);
       console.log('Landings encontradas:', querySnapshot.size);
       
-      // Ordenamos los resultados en memoria
       const landings = querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
@@ -479,7 +139,6 @@ export const landingPageService = {
         };
       });
 
-      // Ordenar por updatedAt de forma descendente
       return landings.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
     } catch (error) {
       console.error('Error al obtener landing pages:', error);
@@ -487,21 +146,22 @@ export const landingPageService = {
     }
   },
 
-  getLandingPageById,
-  getLandingPageByDomain,
-
-  async createLandingPage(name: string): Promise<LandingPage | null> {
+  async createLandingPage(name: string, template?: any) {
     try {
       const user = getCurrentUser();
       console.log('Creando landing page para usuario:', user.uid);
 
-      const newLanding: LandingPage = {
+      const newLanding = {
         name,
-        components: [],
+        title: name,
+        components: template?.components ? template.components.map((comp: any) => ({
+          ...comp,
+          id: uuidv4() // Asegurarnos de que cada componente tenga un ID único
+        })) : [],
         published: false,
         userId: user.uid,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
         theme: {
           primary: '#3B82F6',
           secondary: '#10B981',
@@ -509,21 +169,22 @@ export const landingPageService = {
           text: '#1F2937'
         },
         status: 'draft',
-        thumbnail: generateThumbnail([])
+        template: template?.id || null,
+        thumbnail: generateThumbnail(template?.components || [])
       };
 
       const docRef = doc(collection(db, COLLECTION_NAME));
       await setDoc(docRef, {
         ...newLanding,
-        id: docRef.id,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        id: docRef.id
       });
 
       console.log('Landing page creada con ID:', docRef.id);
       return {
         ...newLanding,
-        id: docRef.id
+        id: docRef.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
     } catch (error) {
       console.error('Error al crear landing page:', error);
@@ -531,12 +192,72 @@ export const landingPageService = {
     }
   },
 
-  updateLandingPage,
-
-  async deleteLandingPage(id: string): Promise<boolean> {
+  async getLandingPageById(id: string) {
     try {
       const user = getCurrentUser();
-      const landingPage = await getLandingPageById(id);
+      const docRef = doc(db, COLLECTION_NAME, id);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        throw new LandingPageError('Landing page no encontrada', 'not-found');
+      }
+
+      const data = docSnap.data();
+      if (!data) {
+        throw new LandingPageError('Datos de landing page no válidos', 'invalid-data');
+      }
+
+      if (data.userId !== user.uid) {
+        throw new LandingPageError('No tienes permiso para acceder a esta landing page', 'permission-denied');
+      }
+
+      return {
+        ...data,
+        id: docSnap.id,
+        createdAt: convertTimestampToDate(data.createdAt),
+        updatedAt: convertTimestampToDate(data.updatedAt)
+      };
+    } catch (error) {
+      console.error('Error al obtener landing page:', error);
+      throw error;
+    }
+  },
+
+  async updateLandingPage(id: string, data: any) {
+    try {
+      const docRef = doc(db, COLLECTION_NAME, id);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        throw new LandingPageError('Landing page no encontrada', 'not-found');
+      }
+
+      const updateData = {
+        ...sanitizeData(data),
+        updatedAt: serverTimestamp()
+      };
+
+      await updateDoc(docRef, updateData);
+
+      const updatedDoc = await getDoc(docRef);
+      const updatedData = updatedDoc.data();
+
+      return {
+        ...updatedData,
+        id,
+        createdAt: convertTimestampToDate(updatedData.createdAt),
+        updatedAt: convertTimestampToDate(updatedData.updatedAt)
+      };
+    } catch (error) {
+      console.error('Error al actualizar landing page:', error);
+      throw error;
+    }
+  },
+
+  async deleteLandingPage(id: string) {
+    try {
+      const user = getCurrentUser();
+      const landingPage = await this.getLandingPageById(id);
 
       if (!landingPage) {
         throw new LandingPageError('La landing page no existe', 'not-found');
@@ -547,23 +268,274 @@ export const landingPageService = {
       }
 
       if (landingPage.published) {
-        await unpublishLandingPage(id);
+        await this.unpublishLandingPage(id);
       }
 
       await deleteDoc(doc(db, COLLECTION_NAME, id));
       return true;
     } catch (error) {
-      if (error instanceof LandingPageError) {
-        throw error;
-      }
-      console.error('Error al eliminar la landing page:', error);
-      throw new LandingPageError('Error al eliminar la landing page', 'unknown-error');
+      console.error('Error al eliminar landing page:', error);
+      throw error;
     }
   },
 
-  publishLandingPage,
-  unpublishLandingPage,
-  validateDomain,
-  getUserPlan,
-  getPublishedPage
+  async publishLandingPage(id: string, customDomain?: string): Promise<string> {
+    const page = await this.getLandingPage(id);
+    if (!page) {
+      throw new Error('Page not found');
+    }
+
+    let domain: string;
+    let url: string;
+
+    if (customDomain) {
+      // Configurar dominio personalizado
+      const domainResult = await domainService.setCustomDomain(id, customDomain);
+      domain = customDomain;
+      url = `https://${customDomain}`;
+    } else {
+      // Generar subdominio automático
+      const subdomain = await domainService.setSubdomain(id);
+      domain = subdomain;
+      url = `https://${subdomain}.tudominio.com`;
+    }
+
+    // Actualizar la landing page con la información de publicación
+    await this.updateLandingPage(id, {
+      status: 'published',
+      publishedAt: new Date(),
+      publishConfig: {
+        domain,
+        url
+      }
+    });
+
+    return url;
+  },
+
+  async unpublishLandingPage(id: string) {
+    try {
+      const user = getCurrentUser();
+      const landingPage = await this.getLandingPageById(id);
+
+      if (!landingPage) {
+        throw new LandingPageError('La landing page no existe', 'not-found');
+      }
+
+      if (landingPage.userId !== user.uid) {
+        throw new LandingPageError('No tienes permiso para despublicar esta landing page', 'permission-denied');
+      }
+
+      if (landingPage.customDomain) {
+        const domainsRef = collection(db, COLLECTION_DOMAINS);
+        const q = query(domainsRef, where('domain', '==', landingPage.customDomain));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const domainDoc = querySnapshot.docs[0];
+          await deleteDoc(domainDoc.ref);
+        }
+      }
+
+      const updateData = {
+        published: false,
+        publishedUrl: null,
+        customDomain: null,
+        updatedAt: serverTimestamp()
+      };
+
+      return this.updateLandingPage(id, updateData);
+    } catch (error) {
+      console.error('Error al despublicar landing page:', error);
+      throw error;
+    }
+  },
+
+  async validateDomain(domain: string) {
+    try {
+      if (!domain) {
+        return { isValid: false, error: 'El dominio es requerido' };
+      }
+
+      const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
+      if (!domainRegex.test(domain)) {
+        return { 
+          isValid: false, 
+          error: 'El formato del dominio no es válido' 
+        };
+      }
+
+      const domainsRef = collection(db, COLLECTION_DOMAINS);
+      const q = query(domainsRef, where('domain', '==', domain));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        return { 
+          isValid: false, 
+          error: 'El dominio ya está en uso' 
+        };
+      }
+
+      const user = getCurrentUser();
+      const userPlan = await this.getUserPlan(user.uid);
+
+      if (!userPlan.isPremium) {
+        return { 
+          isValid: false, 
+          error: 'Necesitas una cuenta premium para usar dominios personalizados' 
+        };
+      }
+
+      return { isValid: true };
+    } catch (error) {
+      console.error('Error al validar el dominio:', error);
+      return { 
+        isValid: false, 
+        error: 'Error al validar el dominio' 
+      };
+    }
+  },
+
+  async getUserPlan(userId: string) {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', userId));
+      if (!userDoc.exists()) {
+        return { isPremium: false };
+      }
+
+      const userData = userDoc.data();
+      return {
+        isPremium: userData.isPremium || false,
+        expiresAt: userData.premiumExpiresAt ? new Date(userData.premiumExpiresAt) : undefined
+      };
+    } catch (error) {
+      console.error('Error al obtener el plan del usuario:', error);
+      return { isPremium: false };
+    }
+  },
+
+  async getPublishedPage(id: string) {
+    try {
+      const docRef = doc(db, COLLECTION_NAME, id);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        throw new LandingPageError('Página no encontrada', 'not-found');
+      }
+
+      const data = docSnap.data();
+      if (!data.published) {
+        throw new LandingPageError('Esta página no está publicada', 'not-published');
+      }
+
+      return {
+        components: data.components || [],
+        settings: data.settings || {},
+      };
+    } catch (error) {
+      console.error('Error al obtener la página publicada:', error);
+      throw error;
+    }
+  },
+
+  async getLandingPageByDomain(domain: string) {
+    try {
+      const domainsRef = collection(db, COLLECTION_DOMAINS);
+      const q = query(domainsRef, where('domain', '==', domain));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        return null;
+      }
+
+      const domainDoc = querySnapshot.docs[0];
+      const { landingPageId } = domainDoc.data();
+
+      return this.getLandingPageById(landingPageId);
+    } catch (error) {
+      console.error('Error al obtener la landing page por dominio:', error);
+      throw error;
+    }
+  },
+
+  async createLandingPageNew(userId: string, template?: any): Promise<string> {
+    const pageId = uuidv4();
+    const landingPage: LandingPage = {
+      id: pageId,
+      name: 'Nueva Landing Page',
+      components: template?.components || [],
+      status: 'draft',
+      userId,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    await setDoc(doc(db, COLLECTION_NAME, pageId), landingPage);
+    return pageId;
+  },
+
+  async getLandingPageNew(id: string): Promise<LandingPage | null> {
+    const pageRef = doc(db, COLLECTION_NAME, id);
+    const pageSnap = await getDoc(pageRef);
+    
+    if (!pageSnap.exists()) {
+      return null;
+    }
+
+    return pageSnap.data() as LandingPage;
+  },
+
+  async updateLandingPageNew(id: string, data: Partial<LandingPage>): Promise<void> {
+    const pageRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(pageRef, {
+      ...data,
+      updatedAt: new Date()
+    });
+  },
+
+  async publishLandingPageNew(id: string, customDomain?: string): Promise<string> {
+    const page = await this.getLandingPageNew(id);
+    if (!page) {
+      throw new Error('Page not found');
+    }
+
+    let domain: string;
+    let url: string;
+
+    if (customDomain) {
+      // Configurar dominio personalizado
+      await domainService.setCustomDomain(id, customDomain, page.userId);
+      domain = customDomain;
+      url = `https://${customDomain}`;
+    } else {
+      // Generar subdominio automático
+      const subdomain = await domainService.setSubdomain(id, page.userId);
+      domain = subdomain;
+      url = `https://${subdomain}.tudominio.com`;
+    }
+
+    // Actualizar la landing page con la información de publicación
+    await this.updateLandingPageNew(id, {
+      status: 'published',
+      publishedAt: new Date(),
+      publishConfig: {
+        domain,
+        url
+      }
+    });
+
+    return url;
+  },
+
+  async getUserLandingPagesNew(userId: string): Promise<LandingPage[]> {
+    const pagesRef = collection(db, COLLECTION_NAME);
+    const q = query(pagesRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+    
+    return querySnapshot.docs.map(doc => doc.data() as LandingPage);
+  },
+
+  async archiveLandingPageNew(id: string): Promise<void> {
+    await this.updateLandingPageNew(id, { status: 'archived' });
+  }
 };

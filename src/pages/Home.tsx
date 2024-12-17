@@ -1,263 +1,559 @@
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Rocket, ArrowRight, Layout, BarChart3, Users, Check, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { 
+  ArrowRightIcon,
+  BrainCircuit, 
+  Blocks, 
+  Palette,
+  Gauge,
+  Shield,
+  PlayCircle,
+  CheckCircle2,
+  Users,
+  BarChart3,
+  Globe2,
+  Zap,
+  Rocket,
+  Target,
+  LineChart,
+  Award,
+  HelpCircle
+} from 'lucide-react';
+import { Footer } from '../components/Footer';
+import { useNavigation } from '../hooks/useNavigation';
 
 export function Home() {
+  const {
+    handleGetStarted,
+    handleStartTrial,
+    handleViewDemo,
+    handleFeatures,
+    handleCaseStudies,
+    handleTestimonials,
+    handleIntegrations,
+    handleTemplates,
+    handleCommunity,
+    handleSupport
+  } = useNavigation();
+
   return (
-    <div className="relative isolate">
-      {/* Sección Hero */}
-      <div className="bg-gradient-to-r from-violet-900 via-indigo-900 to-violet-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-        <div className="relative px-6 pt-14 lg:px-8">
-          <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80">
-            <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-pink-500 to-yellow-500 opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
-          </div>
-          <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-            <div className="text-center">
-              <div className="flex justify-center mb-8">
-                <div className="p-3 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 shadow-[0_0_15px_rgba(124,58,237,0.5)]">
-                  <Rocket className="h-12 w-12 text-pink-500" />
-                </div>
-              </div>
-              <h1 className="text-6xl font-bold tracking-tight sm:text-7xl bg-gradient-to-r from-pink-500 via-yellow-500 to-pink-500 text-transparent bg-clip-text animate-gradient">
-                LANDER
+    <div className="min-h-screen bg-[#0B0F19]">
+      <div className="fixed inset-0 pattern-background" />
+      
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-32 pb-24">
+        <div className="container relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <span className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-full bg-gradient-to-r from-[#FF1F8C] to-[#00E5B0] text-white mb-8">
+                <BrainCircuit className="w-4 h-4 mr-2" />
+                Potencia tu presencia digital
+              </span>
+              <h1 className="text-6xl md:text-8xl font-black mb-8 bg-gradient-to-r from-[#00E5B0] via-[#FF1F8C] to-[#00D1FF] text-transparent bg-clip-text font-display">
+                Crea landing pages que cautivan
               </h1>
-              <p className="text-2xl font-semibold mt-4 bg-gradient-to-r from-violet-400 to-indigo-400 text-transparent bg-clip-text">
-                Crea landing pages impactantes en minutos
+              <p className="text-xl text-gray-300 mb-12 font-light leading-relaxed max-w-3xl mx-auto">
+                Convierte visitantes en clientes con nuestra plataforma intuitiva.
               </p>
-              <p className="mt-6 text-lg leading-8 text-blue-100 backdrop-blur-sm bg-white/5 p-4 rounded-lg border border-white/10">
-                Construye, lanza y optimiza tus páginas de aterrizaje sin necesidad de programar. Convierte más visitantes en clientes con nuestro potente constructor de landing pages.
+              <div className="flex items-center justify-center gap-6 flex-wrap">
+                <button 
+                  onClick={handleGetStarted}
+                  className="px-8 py-4 rounded-full bg-gradient-to-r from-[#FF1F8C] to-[#00E5B0] text-white font-bold text-lg transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#FF1F8C]/20 flex items-center group"
+                >
+                  <Blocks className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
+                  Comienza Gratis
+                  <ArrowRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button 
+                  onClick={handleViewDemo}
+                  className="px-8 py-4 rounded-full bg-white/10 text-white font-bold text-lg hover:bg-white/20 transition-all duration-300 flex items-center group"
+                >
+                  <PlayCircle className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
+                  Ver Demo
+                </button>
+              </div>
+              {/* Nueva CTA - Trial Gratuito */}
+              <div className="mt-8 flex items-center justify-center">
+                <span className="text-gray-400 mr-2">¿No estás seguro?</span>
+                <button 
+                  onClick={handleStartTrial}
+                  className="text-[#00E5B0] hover:text-[#FF1F8C] transition-colors font-medium flex items-center group"
+                >
+                  Prueba 14 días gratis
+                  <ArrowRightIcon className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-20 relative overflow-hidden">
+        <div className="container relative z-10 max-w-5xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <motion.h2 
+              className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-transparent bg-clip-text"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Características Únicas
+            </motion.h2>
+            <p className="text-gray-300 max-w-2xl mx-auto text-base">
+              Todo lo que necesitas para destacar en el mundo digital
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                icon: Palette,
+                title: "Diseño Intuitivo",
+                description: "Interfaz drag & drop que hace la creación de páginas simple y rápida",
+                color: "#00E5B0"
+              },
+              {
+                icon: Gauge,
+                title: "Optimizado para Conversión",
+                description: "Plantillas y elementos diseñados para maximizar tus conversiones",
+                color: "#FF1F8C"
+              },
+              {
+                icon: Shield,
+                title: "Seguridad Avanzada",
+                description: "Protección integrada y cumplimiento de estándares web",
+                color: "#00D1FF"
+              }
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                className="relative group"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <div className="card-hover backdrop-blur-xl bg-white/5 p-6 rounded-xl border border-white/10 transition-all duration-300 group-hover:border-[#00E5B0]/50 h-full flex flex-col">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-white/5 to-white/10 group-hover:from-[#00E5B0]/20 group-hover:to-[#FF1F8C]/20 transition-all duration-300">
+                      <feature.icon className="w-5 h-5" style={{ color: feature.color }} />
+                    </div>
+                    <h3 className="text-lg font-bold text-white group-hover:text-[#00E5B0] transition-colors">{feature.title}</h3>
+                  </div>
+                  <p className="text-gray-400 text-sm leading-relaxed">{feature.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          {/* Nueva CTA - Características */}
+          <div className="text-center mt-12">
+            <button
+              onClick={handleFeatures}
+              className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 group"
+            >
+              <span>Explora todas las características</span>
+              <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section id="benefits" className="py-20 relative overflow-hidden">
+        <div className="container relative z-10">
+          <div className="text-center mb-16">
+            <motion.h2 
+              className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-transparent bg-clip-text"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              ¿Por qué elegir Lander?
+            </motion.h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Descubre cómo podemos ayudarte a alcanzar tus objetivos
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: Users,
+                title: "Para Todos",
+                description: "No necesitas conocimientos técnicos para crear páginas profesionales"
+              },
+              {
+                icon: BarChart3,
+                title: "Resultados Reales",
+                description: "Optimiza tus conversiones con análisis detallados y A/B testing"
+              },
+              {
+                icon: Globe2,
+                title: "SEO Optimizado",
+                description: "Mejora tu posicionamiento con páginas optimizadas para buscadores"
+              },
+              {
+                icon: Zap,
+                title: "Alto Rendimiento",
+                description: "Páginas rápidas y responsive que cargan en cualquier dispositivo"
+              }
+            ].map((benefit, index) => (
+              <motion.div
+                key={index}
+                className="text-center p-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <div className="inline-flex p-3 rounded-xl bg-gradient-to-br from-[#00E5B0]/20 to-[#FF1F8C]/20 mb-4">
+                  <benefit.icon className="w-6 h-6 text-[#00E5B0]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">{benefit.title}</h3>
+                <p className="text-gray-400 text-sm">{benefit.description}</p>
+              </motion.div>
+            ))}
+          </div>
+          {/* Nueva CTA - Casos de Éxito */}
+          <div className="text-center mt-12">
+            <button
+              onClick={handleCaseStudies}
+              className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-white hover:opacity-90 transition-opacity group"
+            >
+              <Target className="w-5 h-5 mr-2" />
+              <span>Ver casos de éxito</span>
+              <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section id="stats" className="py-20 relative overflow-hidden">
+        <div className="container relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {[
+              {
+                icon: Rocket,
+                value: "10K+",
+                label: "Landing Pages Creadas"
+              },
+              {
+                icon: Target,
+                value: "95%",
+                label: "Tasa de Satisfacción"
+              },
+              {
+                icon: LineChart,
+                value: "2X",
+                label: "Aumento en Conversiones"
+              },
+              {
+                icon: Award,
+                value: "#1",
+                label: "En Facilidad de Uso"
+              }
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                className="text-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-[#00E5B0]/20 to-[#FF1F8C]/20 mb-4">
+                  <stat.icon className="w-8 h-8 text-[#00E5B0]" />
+                </div>
+                <div className="text-4xl font-bold text-white mb-2">{stat.value}</div>
+                <p className="text-gray-400">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+          {/* Nueva CTA - Testimonios */}
+          <div className="text-center mt-12">
+            <button
+              onClick={handleTestimonials}
+              className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 group"
+            >
+              <Users className="w-5 h-5 mr-2" />
+              <span>Lee las historias de nuestros usuarios</span>
+              <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 relative overflow-hidden">
+        <div className="container relative z-10">
+          <div className="text-center mb-16">
+            <motion.h2 
+              className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-transparent bg-clip-text"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Planes que se adaptan a ti
+            </motion.h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Elige el plan que mejor se ajuste a tus necesidades
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              {
+                name: "Básico",
+                price: "Gratis",
+                features: [
+                  "1 Landing Page",
+                  "Plantillas Básicas",
+                  "Análisis Básico",
+                  "Soporte por Email"
+                ]
+              },
+              {
+                name: "Pro",
+                price: "$19/mes",
+                popular: true,
+                features: [
+                  "10 Landing Pages",
+                  "Todas las Plantillas",
+                  "Análisis Avanzado",
+                  "Soporte Prioritario",
+                  "Dominio Personalizado",
+                  "A/B Testing"
+                ]
+              },
+              {
+                name: "Empresa",
+                price: "$49/mes",
+                features: [
+                  "Landing Pages Ilimitadas",
+                  "Plantillas Exclusivas",
+                  "Análisis Premium",
+                  "Soporte 24/7",
+                  "Múltiples Dominios",
+                  "API Access"
+                ]
+              }
+            ].map((plan, index) => (
+              <motion.div
+                key={index}
+                className={`relative ${plan.popular ? 'scale-105' : ''}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <div className={`
+                  h-full p-8 rounded-2xl border backdrop-blur-xl
+                  ${plan.popular 
+                    ? 'bg-gradient-to-b from-[#00E5B0]/10 to-[#FF1F8C]/10 border-[#00E5B0]/50' 
+                    : 'bg-white/5 border-white/10'
+                  }
+                `}>
+                  {plan.popular && (
+                    <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-white">
+                      Más Popular
+                    </span>
+                  )}
+                  <div className="text-center mb-8">
+                    <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
+                    <div className="text-3xl font-bold text-white mb-4">{plan.price}</div>
+                  </div>
+                  <ul className="space-y-4 mb-8">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center text-gray-300">
+                        <CheckCircle2 className="w-5 h-5 text-[#00E5B0] mr-2" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={handleGetStarted}
+                    className={`
+                      block w-full py-3 px-6 rounded-xl text-center font-medium transition-all duration-300
+                      ${plan.popular
+                        ? 'bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-white hover:opacity-90'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                      }
+                    `}
+                  >
+                    Comenzar Ahora
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Nueva Sección - Integrations */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="container relative z-10">
+          <div className="text-center mb-12">
+            <motion.h2 
+              className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-transparent bg-clip-text"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Integrado con tus herramientas favoritas
+            </motion.h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Conecta Lander con las mejores herramientas de marketing y análisis
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            {/* Logos de integraciones aquí */}
+          </div>
+          {/* Nueva CTA - Integraciones */}
+          <div className="text-center mt-12">
+            <button
+              onClick={handleIntegrations}
+              className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 group"
+            >
+              <span>Explora todas las integraciones</span>
+              <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Nueva Sección - Templates */}
+      <section className="py-20 relative overflow-hidden bg-gradient-to-b from-[#0B0F19] to-[#0B0F19]/50">
+        <div className="container relative z-10">
+          <div className="text-center mb-12">
+            <motion.h2 
+              className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-transparent bg-clip-text"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Plantillas profesionales
+            </motion.h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Comienza con una de nuestras plantillas optimizadas para conversión
+            </p>
+          </div>
+          {/* Nueva CTA - Templates */}
+          <div className="text-center mt-12">
+            <button
+              onClick={handleTemplates}
+              className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-white hover:opacity-90 transition-opacity group"
+            >
+              <Palette className="w-5 h-5 mr-2" />
+              <span>Explora las plantillas</span>
+              <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Nueva Sección - Community */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="container relative z-10">
+          <div className="text-center mb-12">
+            <motion.h2 
+              className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-transparent bg-clip-text"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Únete a nuestra comunidad
+            </motion.h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Conecta con otros creadores y comparte tus experiencias
+            </p>
+          </div>
+          {/* Nueva CTA - Community */}
+          <div className="text-center mt-12">
+            <button
+              onClick={handleCommunity}
+              className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 group"
+            >
+              <Users className="w-5 h-5 mr-2" />
+              <span>Únete a la comunidad</span>
+              <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Nueva Sección - Support */}
+      <section className="py-20 relative overflow-hidden bg-gradient-to-b from-[#0B0F19]/50 to-[#0B0F19]">
+        <div className="container relative z-10">
+          <div className="text-center mb-12">
+            <motion.h2 
+              className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-transparent bg-clip-text"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Soporte 24/7
+            </motion.h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Estamos aquí para ayudarte en cada paso del camino
+            </p>
+          </div>
+          {/* Nueva CTA - Support */}
+          <div className="text-center mt-12">
+            <button
+              onClick={handleSupport}
+              className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-white hover:opacity-90 transition-opacity group"
+            >
+              <HelpCircle className="w-5 h-5 mr-2" />
+              <span>Obtén ayuda</span>
+              <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="container relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="backdrop-blur-xl bg-white/5 p-12 rounded-3xl border border-white/10"
+            >
+              <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-transparent bg-clip-text">
+                ¿Listo para empezar?
+              </h2>
+              <p className="text-gray-300 mb-8 text-lg">
+                Únete a miles de usuarios que ya están creando landing pages increíbles
               </p>
-              <div className="mt-10 flex items-center justify-center gap-x-6">
-                <Link to="/register">
-                  <Button variant="glow" size="lg" className="gap-2">
-                    Empezar Ahora <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link to="/demo">
-                  <Button variant="glass" size="lg">
-                    Ver Demo
-                  </Button>
-                </Link>
-              </div>
-            </div>
+              <button
+                onClick={handleGetStarted}
+                className="inline-flex items-center px-8 py-4 rounded-full bg-gradient-to-r from-[#FF1F8C] to-[#00E5B0] text-white font-bold text-lg transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#FF1F8C]/20"
+              >
+                <Rocket className="w-5 h-5 mr-2" />
+                Comienza tu prueba gratuita
+                <ArrowRightIcon className="w-5 h-5 ml-2" />
+              </button>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Sección de Características */}
-      <div className="relative bg-gradient-to-b from-violet-950 to-indigo-950 py-24 sm:py-32">
-        <div className="absolute inset-0 bg-[url('/stars.svg')] bg-repeat opacity-30"></div>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 relative">
-          <div className="mx-auto max-w-2xl lg:text-center mb-16">
-            <h2 className="text-base font-semibold leading-7 text-pink-500">Todo lo que necesitas</h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Características poderosas para negocios modernos
-            </p>
-          </div>
-          <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-              <div className="flex flex-col bg-white/10 p-6 rounded-2xl backdrop-blur-lg">
-                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-white">
-                  <Layout className="h-5 w-5 flex-none text-pink-500" />
-                  Constructor de Landing Pages
-                </dt>
-                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-blue-100">
-                  <p className="flex-auto">Crea páginas profesionales con nuestro constructor drag-and-drop. Sin necesidad de código.</p>
-                </dd>
-              </div>
-              <div className="flex flex-col bg-white/10 p-6 rounded-2xl backdrop-blur-lg">
-                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-white">
-                  <BarChart3 className="h-5 w-5 flex-none text-pink-500" />
-                  Análisis y Estadísticas
-                </dt>
-                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-blue-100">
-                  <p className="flex-auto">Monitorea tu rendimiento con análisis detallados y métricas de conversión.</p>
-                </dd>
-              </div>
-              <div className="flex flex-col bg-white/10 p-6 rounded-2xl backdrop-blur-lg">
-                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-white">
-                  <Users className="h-5 w-5 flex-none text-pink-500" />
-                  Gestión de Leads
-                </dt>
-                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-blue-100">
-                  <p className="flex-auto">Administra y nutre tus leads con nuestro sistema CRM integrado.</p>
-                </dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </div>
-
-      {/* Sección de Testimonios */}
-      <div className="bg-gradient-to-b from-violet-900 to-indigo-900 py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl lg:text-center">
-            <h2 className="text-base font-semibold leading-7 text-pink-500">Testimonios</h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Respaldado por miles de empresas
-            </p>
-          </div>
-          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {/* Testimonios cards con efecto glassmorphism */}
-            <div className="flex flex-col bg-white/10 p-6 backdrop-blur-lg rounded-2xl border border-white/20">
-              <div className="flex gap-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                ))}
-              </div>
-              <blockquote className="mt-4 flex-1 text-lg leading-7 text-blue-100">
-                "Esta plataforma ha transformado la forma en que creamos landing pages. Es intuitiva, rápida y los resultados son increíbles."
-              </blockquote>
-              <div className="mt-6">
-                <p className="font-semibold text-white">María González</p>
-                <p className="text-sm text-blue-200">Directora de Marketing, TechCorp</p>
-              </div>
-            </div>
-            <div className="flex flex-col bg-white/10 p-6 backdrop-blur-lg rounded-2xl border border-white/20">
-              <div className="flex gap-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                ))}
-              </div>
-              <blockquote className="mt-4 flex-1 text-lg leading-7 text-blue-100">
-                "Las funciones de análisis son increíbles. Hemos aumentado nuestras tasas de conversión en un 150% desde que cambiamos."
-              </blockquote>
-              <div className="mt-6">
-                <p className="font-semibold text-white">Carlos Rodríguez</p>
-                <p className="text-sm text-blue-200">CEO, GrowthLabs</p>
-              </div>
-            </div>
-            <div className="flex flex-col bg-white/10 p-6 backdrop-blur-lg rounded-2xl border border-white/20">
-              <div className="flex gap-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                ))}
-              </div>
-              <blockquote className="mt-4 flex-1 text-lg leading-7 text-blue-100">
-                "El soporte al cliente es excepcional. Todas nuestras preguntas fueron respondidas de manera rápida y profesional."
-              </blockquote>
-              <div className="mt-6">
-                <p className="font-semibold text-white">Ana Martínez</p>
-                <p className="text-sm text-blue-200">Fundadora, DesignPro</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sección de Precios */}
-      <div className="bg-gradient-to-b from-indigo-900 to-violet-900 py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl lg:text-center">
-            <h2 className="text-base font-semibold leading-7 text-pink-500">Precios</h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Elige el plan perfecto para tus necesidades
-            </p>
-          </div>
-          <div className="mx-auto mt-16 grid max-w-lg grid-cols-1 gap-8 lg:max-w-none lg:grid-cols-3">
-            {/* Plan Gratuito */}
-            <div className="flex flex-col bg-white/10 p-8 backdrop-blur-lg rounded-2xl border border-white/20">
-              <h3 className="text-lg font-semibold leading-7 text-white">Gratuito</h3>
-              <p className="mt-4 text-sm leading-6 text-blue-200">Perfecto para comenzar</p>
-              <div className="mt-6">
-                <p className="flex items-baseline gap-x-1">
-                  <span className="text-4xl font-bold text-white">$0</span>
-                  <span className="text-sm text-blue-200">/mes</span>
-                </p>
-              </div>
-              <ul className="mt-8 space-y-3">
-                {['1 Landing Page', 'Análisis Básico', 'Soporte Comunitario'].map((feature) => (
-                  <li key={feature} className="flex gap-x-3 text-blue-100">
-                    <Check className="h-5 w-5 text-pink-500" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link to="/register" className="mt-8">
-                <Button variant="outline" className="w-full bg-white/10 text-white hover:bg-white/20 border-white/20">Comenzar Gratis</Button>
-              </Link>
-            </div>
-            {/* Plan Pro */}
-            <div className="flex flex-col bg-gradient-to-r from-pink-500 to-yellow-500 p-8 rounded-2xl shadow-xl transform scale-105">
-              <h3 className="text-lg font-semibold leading-7 text-white">Pro</h3>
-              <p className="mt-4 text-sm leading-6 text-white/90">Ideal para negocios en crecimiento</p>
-              <div className="mt-6">
-                <p className="flex items-baseline gap-x-1">
-                  <span className="text-4xl font-bold text-white">$29</span>
-                  <span className="text-sm text-white/90">/mes</span>
-                </p>
-              </div>
-              <ul className="mt-8 space-y-3">
-                {[
-                  'Landing Pages Ilimitadas',
-                  'Análisis Avanzado',
-                  'Soporte Prioritario',
-                  'Dominios Personalizados',
-                  'Pruebas A/B'
-                ].map((feature) => (
-                  <li key={feature} className="flex gap-x-3 text-white">
-                    <Check className="h-5 w-5 text-white" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link to="/register" className="mt-8">
-                <Button variant="secondary" className="w-full bg-white text-pink-500 hover:bg-white/90">Prueba Gratuita</Button>
-              </Link>
-            </div>
-            {/* Plan Empresarial */}
-            <div className="flex flex-col bg-white/10 p-8 backdrop-blur-lg rounded-2xl border border-white/20">
-              <h3 className="text-lg font-semibold leading-7 text-white">Empresarial</h3>
-              <p className="mt-4 text-sm leading-6 text-blue-200">Para grandes organizaciones</p>
-              <div className="mt-6">
-                <p className="flex items-baseline gap-x-1">
-                  <span className="text-4xl font-bold text-white">$99</span>
-                  <span className="text-sm text-blue-200">/mes</span>
-                </p>
-              </div>
-              <ul className="mt-8 space-y-3">
-                {[
-                  'Todo lo incluido en Pro',
-                  'Gerente de Cuenta Dedicado',
-                  'Soporte con SLA',
-                  'Integraciones Personalizadas',
-                  'Colaboración en Equipo'
-                ].map((feature) => (
-                  <li key={feature} className="flex gap-x-3 text-blue-100">
-                    <Check className="h-5 w-5 text-pink-500" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link to="/register" className="mt-8">
-                <Button variant="outline" className="w-full bg-white/10 text-white hover:bg-white/20 border-white/20">Contactar Ventas</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sección CTA */}
-      <div className="bg-gradient-to-r from-pink-500 to-yellow-500 py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              ¿Listo para comenzar?
-            </h2>
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-white">
-              Únete a miles de empresas que ya están creando landing pages impactantes con nuestra plataforma.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link to="/register">
-                <Button variant="secondary" size="lg" className="bg-white text-pink-500 hover:bg-white/90 gap-2">
-                  Comienza a Construir <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Footer />
     </div>
   );
 }

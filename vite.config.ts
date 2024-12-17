@@ -9,6 +9,20 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     }
   },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@mui/material',
+      '@mui/icons-material',
+      '@mui/x-date-pickers',
+      'date-fns',
+      'sonner',
+      '@radix-ui/react-tooltip'
+    ],
+    force: true
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,
@@ -20,13 +34,26 @@ export default defineConfig({
             if (id.includes('firebase')) {
               return 'firebase';
             }
+            if (id.includes('@mui')) {
+              return 'mui';
+            }
             if (id.includes('@radix-ui')) {
               return 'ui';
+            }
+            if (id.includes('date-fns')) {
+              return 'date-fns';
             }
             return 'vendor';
           }
         }
       }
+    }
+  },
+  server: {
+    port: 5173,
+    strictPort: true,
+    hmr: {
+      timeout: 5000
     }
   }
 });

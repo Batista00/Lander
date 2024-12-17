@@ -13,13 +13,22 @@ import { Wishlist } from '../pages/marketplace/Wishlist';
 import { Cart } from '../pages/marketplace/Cart';
 import { Checkout } from '../pages/marketplace/Checkout';
 import { OrderHistory } from '../pages/marketplace/OrderHistory';
+import { MarketplaceExplore } from '../pages/marketplace/MarketplaceExplore';
+import { MarketplacePurchases } from '../pages/marketplace/MarketplacePurchases';
+import { MarketplaceFavorites } from '../pages/marketplace/MarketplaceFavorites';
+import { MarketplaceSell } from '../pages/marketplace/MarketplaceSell';
 
 export const marketplaceRoutes: RouteObject[] = [
   {
-    path: '/marketplace',
+    path: 'marketplace',
     element: <MarketplaceLayout />,
     children: [
       { index: true, element: <MarketplaceHome /> },
+      { path: 'explore', element: <MarketplaceExplore /> },
+      { path: 'purchases', element: <MarketplacePurchases /> },
+      { path: 'favorites', element: <MarketplaceFavorites /> },
+      { path: 'sell', element: <MarketplaceSell /> },
+      { path: 'settings', element: <MarketplaceSettings /> },
       { path: 'template/:id', element: <TemplateDetails /> },
       { path: 'seller/:id', element: <SellerProfile /> },
       { path: 'categories', element: <Categories /> },
