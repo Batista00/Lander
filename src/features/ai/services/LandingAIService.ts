@@ -31,12 +31,21 @@ export class LandingAIService {
   private model: any;
 
   constructor() {
-    const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      throw new Error('API key not configured');
+    try {
+      const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
+      if (!apiKey) {
+        console.error('Google AI API key not found in environment variables');
+        throw new Error('API key not configured');
+      }
+      
+      console.log('Initializing Google AI with key:', apiKey.substring(0, 5) + '...');
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+      console.log('Google AI initialized successfully');
+    } catch (error) {
+      console.error('Error initializing Google AI:', error);
+      throw error;
     }
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
   }
 
   async generateDesignSuggestions(niche: string, purpose: string): Promise<DesignSuggestion> {

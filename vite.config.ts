@@ -9,6 +9,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     }
   },
+  define: {
+    'process.env': {},
+    global: {},
+  },
   optimizeDeps: {
     include: [
       'react',
@@ -19,11 +23,15 @@ export default defineConfig({
       '@mui/x-date-pickers',
       'date-fns',
       'sonner',
-      '@radix-ui/react-tooltip'
+      '@radix-ui/react-tooltip',
+      '@google/generative-ai'
     ],
     force: true,
     esbuildOptions: {
-      target: 'es2020'
+      target: 'es2020',
+      define: {
+        global: 'globalThis'
+      }
     }
   },
   build: {
@@ -35,6 +43,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           ui: ['@mui/material', '@mui/icons-material', '@mui/x-date-pickers'],
+          ai: ['@google/generative-ai']
         }
       }
     }
