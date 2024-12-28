@@ -11,8 +11,10 @@ export default defineConfig({
   },
   define: {
     'process.env': process.env,
-    global: 'globalThis',
-    'global.TYPED_ARRAY_SUPPORT': true
+    'global': {},
+    'require': {
+      'require': 'globalThis.require'
+    }
   },
   optimizeDeps: {
     include: [
@@ -32,7 +34,8 @@ export default defineConfig({
       target: 'es2020',
       define: {
         global: 'globalThis',
-        'process.env.NODE_ENV': '"production"'
+        'process.env.NODE_ENV': '"production"',
+        'require': 'globalThis.require'
       },
       supported: {
         'top-level-await': true
