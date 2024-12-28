@@ -1,214 +1,257 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { HeroProps } from '../interfaces/ComponentInterfaces';
+import { Component } from '@/types/landing';
+import { ComponentEditorProps } from '@/types/components';
+import { useTheme } from '@/themes/ThemeContext';
+import { PexelsImagePicker } from '@/components/shared/PexelsImagePicker';
+import { heroVariants } from './variants/hero-variants';
+import { motion } from 'framer-motion';
+
+interface HeroProps extends ComponentEditorProps {
+  component: Component;
+  mode?: 'preview' | 'published' | 'edit';
+  onChange?: (component: Component) => void;
+  isPremium?: boolean;
+}
 
 export const Hero: React.FC<HeroProps> = ({
-  data = {
-    title: 'Título Principal',
-    subtitle: 'Subtítulo',
-    description: 'Descripción de tu hero section',
-    buttonText: 'Empezar',
-    buttonLink: '#',
-    backgroundImage: '/images/default-hero.jpg',
-    buttonStyle: 'primary',
-    overlayColor: 'rgba(0, 0, 0, 0.5)',
-    overlayOpacity: 0.5,
-    height: 'h-screen',
-    layout: 'center',
-    backgroundColor: 'bg-gray-900',
-    textColor: 'text-white'
-  },
-  isEditing = false,
-  onEdit
+  component,
+  onChange,
+  mode = 'preview',
+  isPremium = false
 }) => {
-  // Manejar las actualizaciones de manera más robusta
-  const handleEdit = React.useCallback((field: string, value: any) => {
-    if (onEdit) {
-      console.log('Hero - Actualizando campo:', field, 'con valor:', value);
-      // Actualizar el componente con los nuevos datos
-      onEdit(field, {
-        ...data,
-        [field]: value
-      });
-    }
-  }, [onEdit, data]);
-
-  // Asegurarnos de que siempre tenemos valores válidos
-  const content = React.useMemo(() => ({
-    title: data?.title || 'Título Principal',
-    subtitle: data?.subtitle || 'Subtítulo',
-    description: data?.description || 'Descripción de tu hero section',
-    buttonText: data?.buttonText || 'Empezar',
-    buttonLink: data?.buttonLink || '#',
-    backgroundImage: data?.backgroundImage || '/images/default-hero.jpg',
-    buttonStyle: data?.buttonStyle || 'primary',
-    overlayColor: data?.overlayColor || 'rgba(0, 0, 0, 0.5)',
-    overlayOpacity: data?.overlayOpacity ?? 0.5,
-    height: data?.height || 'h-screen',
-    layout: data?.layout || 'center',
-    backgroundColor: data?.backgroundColor || 'bg-gray-900',
-    textColor: data?.textColor || 'text-white'
-  }), [data]);
+  const { currentTheme } = useTheme();
+  const variant = component.content?.variant || 'modern';
+  const variantConfig = heroVariants[variant];
 
   const {
-    title,
-    subtitle,
-    description,
-    buttonText,
-    buttonLink,
-    backgroundImage,
-    buttonStyle,
-    overlayColor,
-    overlayOpacity,
-    height,
-    layout,
-    backgroundColor,
-    textColor
-  } = content;
+    title = variantConfig?.defaultContent?.title || '',
+    subtitle = variantConfig?.defaultContent?.subtitle || '',
+    description = variantConfig?.defaultContent?.description || '',
+    buttonText = variantConfig?.defaultContent?.buttonText || '',
+    buttonStyle = variantConfig?.defaultContent?.buttonStyle || 'primary',
+    backgroundImage = variantConfig?.defaultContent?.backgroundImage || ''
+  } = component.content || {};
 
-  const containerStyles = cn(
-    'relative w-full flex items-center justify-center',
-    height,
-    backgroundColor,
-    {
-      'text-left': layout === 'left',
-      'text-center': layout === 'center',
-      'text-right': layout === 'right'
-    }
+  const styles = variantConfig?.styles || {};
+  const colors = styles.colors || {};
+  const typography = styles.typography || {};
+  const spacing = styles.spacing || {};
+  const layout = styles.layout || {};
+
+  const containerClasses = cn(
+    'relative min-h-[500px] flex items-center',
+    spacing.padding || 'py-24',
+    spacing.gap || 'space-y-6'
   );
 
-  const contentStyles = cn(
-    'relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8',
-    {
-      'text-left': layout === 'left',
-      'text-center': layout === 'center',
-      'text-right': layout === 'right'
-    }
+  const contentClasses = cn(
+    'container mx-auto px-4 relative z-10',
+    layout.alignment === 'center' ? 'text-center' : '',
+    layout.alignment === 'left' ? 'text-left' : '',
+    layout.alignment === 'right' ? 'text-right' : ''
   );
 
-  const titleStyles = cn(
+  const titleClasses = cn(
+    typography.titleSize || 'text-5xl',
     'font-bold tracking-tight',
-    textColor,
-    {
-      'text-4xl md:text-5xl lg:text-6xl': true,
-      'max-w-3xl mx-auto': layout === 'center'
-    }
+    colors.text || 'text-white'
   );
 
-  const descriptionStyles = cn(
-    'mt-6 text-lg md:text-xl',
-    {
-      'text-gray-300': textColor === 'text-white',
-      'text-gray-600': textColor !== 'text-white',
-      'max-w-2xl mx-auto': layout === 'center'
-    }
+  const subtitleClasses = cn(
+    typography.subtitleSize || 'text-3xl',
+    'font-semibold',
+    colors.text || 'text-white'
   );
 
-  const buttonStyles = cn(
-    'mt-8 px-8 py-3 rounded-full text-lg font-medium transition-all duration-200',
-    {
-      'bg-blue-600 text-white hover:bg-blue-700': buttonStyle === 'primary',
-      'bg-white text-blue-600 hover:bg-gray-100': buttonStyle === 'secondary',
-      'border-2 border-current hover:bg-white/10': buttonStyle === 'outline'
-    }
+  const descriptionClasses = cn(
+    typography.descriptionSize || 'text-xl',
+    'max-w-3xl mx-auto',
+    colors.text || 'text-white'
   );
+
+  const buttonClasses = cn(
+    'px-6 py-3 rounded-lg font-medium transition-colors duration-200',
+    buttonStyle === 'primary' ? `bg-${colors.accent || 'blue-600'} text-white hover:bg-opacity-90` : '',
+    buttonStyle === 'secondary' ? `bg-${colors.text || 'white'} text-${colors.accent || 'blue-600'} hover:bg-opacity-90` : '',
+    buttonStyle === 'outline' ? `border-2 border-${colors.text || 'white'} text-${colors.text || 'white'} hover:bg-white hover:bg-opacity-10` : ''
+  );
+
+  const overlayClasses = cn(
+    'absolute inset-0',
+    colors.background || 'bg-black bg-opacity-50'
+  );
+
+  const handleImageSelect = (imageUrl: string) => {
+    if (onChange) {
+      onChange({
+        ...component,
+        content: {
+          ...component.content,
+          backgroundImage: imageUrl
+        }
+      });
+    }
+  };
+
+  const handleChange = (field: string, value: string) => {
+    if (!onChange) return;
+    
+    onChange({
+      ...component,
+      content: {
+        ...component.content,
+        [field]: value
+      }
+    });
+  };
+
+  const isEditing = mode === 'edit';
 
   return (
-    <section className={containerStyles}>
-      {/* Fondo con imagen y overlay */}
-      {backgroundImage && (
-        <>
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${backgroundImage})` }}
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            duration: 0.6,
+            staggerChildren: 0.2
+          }
+        }
+      }}
+      className={containerClasses}
+      style={{
+        backgroundColor: styles.colors.background || currentTheme.colors.background,
+        color: styles.colors.text || currentTheme.colors.text
+      }}
+    >
+      {isEditing && (
+        <div className="absolute inset-x-0 -top-12 flex justify-center">
+          <PexelsImagePicker
+            onSelect={handleImageSelect}
+            buttonText="Cambiar imagen de fondo"
+            currentImage={backgroundImage}
+            category={component.category}
           />
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundColor: overlayColor,
-              opacity: overlayOpacity
-            }}
-          />
-        </>
+        </div>
       )}
 
-      {/* Contenido */}
-      <div className={contentStyles}>
-        <div className="relative">
+      {backgroundImage && (
+        <div 
+          className="absolute inset-0 z-0 transition-opacity duration-500"
+          style={{
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        />
+      )}
+
+      <div className={contentClasses}>
+        <motion.div 
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0 }
+          }}
+          className="max-w-3xl"
+        >
           {isEditing ? (
             <input
               type="text"
-              value={content.title}
-              onChange={(e) => handleEdit('title', e.target.value)}
-              className="w-full bg-transparent border-none focus:ring-2 focus:ring-blue-500"
-              onBlur={() => console.log('Hero - Campo actualizado:', 'title')}
+              value={title}
+              onChange={(e) => handleChange('title', e.target.value)}
+              className={cn(
+                'w-full bg-transparent border-none mb-4 focus:ring-2 focus:ring-blue-500',
+                titleClasses
+              )}
+              placeholder="Título Principal"
             />
           ) : (
-            <h1 className={titleStyles}>{content.title}</h1>
+            <motion.h1 
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              className={titleClasses}
+            >
+              {title}
+            </motion.h1>
           )}
 
-          {subtitle && (
-            <div className="mt-4">
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={content.subtitle}
-                  onChange={(e) => handleEdit('subtitle', e.target.value)}
-                  className="w-full bg-transparent border-none focus:ring-2 focus:ring-blue-500"
-                />
-              ) : (
-                <p className="text-xl md:text-2xl font-medium text-gray-300">
-                  {content.subtitle}
-                </p>
+          {isEditing ? (
+            <input
+              type="text"
+              value={subtitle}
+              onChange={(e) => handleChange('subtitle', e.target.value)}
+              className={cn(
+                'w-full bg-transparent border-none mb-4 focus:ring-2 focus:ring-blue-500',
+                subtitleClasses
               )}
-            </div>
+              placeholder="Subtítulo"
+            />
+          ) : (
+            <motion.h2 
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              className={subtitleClasses}
+            >
+              {subtitle}
+            </motion.h2>
           )}
 
-          {description && (
-            <div className={descriptionStyles}>
-              {isEditing ? (
-                <textarea
-                  value={content.description}
-                  onChange={(e) => handleEdit('description', e.target.value)}
-                  className="w-full bg-transparent border-none focus:ring-2 focus:ring-blue-500"
-                  rows={3}
-                />
-              ) : (
-                <p>{content.description}</p>
+          {isEditing ? (
+            <textarea
+              value={description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              className={cn(
+                'w-full bg-transparent border-none mb-8 focus:ring-2 focus:ring-blue-500',
+                descriptionClasses
               )}
-            </div>
+              rows={3}
+              placeholder="Descripción"
+            />
+          ) : (
+            <motion.p 
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              className={descriptionClasses}
+            >
+              {description}
+            </motion.p>
           )}
 
           {buttonText && (
-            <div className="mt-8">
-              {isEditing ? (
-                <div className="flex gap-4 items-center">
-                  <input
-                    type="text"
-                    value={content.buttonText}
-                    onChange={(e) => handleEdit('buttonText', e.target.value)}
-                    className="bg-transparent border-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <input
-                    type="text"
-                    value={content.buttonLink}
-                    onChange={(e) => handleEdit('buttonLink', e.target.value)}
-                    className="bg-transparent border-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="URL del botón"
-                  />
-                </div>
-              ) : (
-                <a href={content.buttonLink}>
-                  <Button className={buttonStyles}>
-                    {content.buttonText}
-                  </Button>
-                </a>
-              )}
-            </div>
+            <motion.div variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 }
+            }}>
+              <Button
+                variant={buttonStyle}
+                onClick={() => buttonLink && window.open(buttonLink, '_blank')}
+                className={cn(
+                  'transition-all duration-300 hover:scale-105',
+                  isPremium && 'premium-button',
+                  buttonClasses
+                )}
+                style={{
+                  backgroundColor: styles.colors.accent || currentTheme.colors.primary
+                }}
+              >
+                {buttonText}
+              </Button>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
-    </section>
+    </motion.div>
   );
 };

@@ -1,92 +1,51 @@
-import { cn } from '@/lib/utils';
+import React from 'react';
+import { Component } from '@/types/landing';
 
 interface TextProps {
-  id: string;
-  content: {
-    text: string;
-    alignment?: 'left' | 'center' | 'right';
-    size?: 'small' | 'medium' | 'large';
-    color?: string;
-    backgroundColor?: string;
-    padding?: 'small' | 'medium' | 'large';
-    fontWeight?: 'normal' | 'medium' | 'bold';
-  };
-  onEdit?: () => void;
+  component: Component;
+  onEdit?: (id: string, content: any) => void;
 }
 
-export function Text({ id, content, onEdit }: TextProps) {
-  const {
-    text,
-    alignment = 'left',
-    size = 'medium',
-    color = 'text-gray-700',
-    backgroundColor = 'bg-transparent',
-    padding = 'medium',
-    fontWeight = 'normal'
-  } = content;
-
-  const sizeClasses = {
-    small: 'text-sm',
-    medium: 'text-base',
-    large: 'text-lg'
+const Text: React.FC<TextProps> = ({ component, onEdit }) => {
+  const content = component.content as {
+    text: string;
+    variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p';
+    className?: string;
   };
 
-  const paddingClasses = {
-    small: 'p-2',
-    medium: 'p-4',
-    large: 'p-6'
-  };
-
-  const fontWeightClasses = {
-    normal: 'font-normal',
-    medium: 'font-medium',
-    bold: 'font-bold'
+  const getTextComponent = () => {
+    switch (content.variant) {
+      case 'h1':
+        return <h1 className={`text-4xl font-bold ${content.className || ''}`}>{content.text}</h1>;
+      case 'h2':
+        return <h2 className={`text-3xl font-bold ${content.className || ''}`}>{content.text}</h2>;
+      case 'h3':
+        return <h3 className={`text-2xl font-bold ${content.className || ''}`}>{content.text}</h3>;
+      case 'h4':
+        return <h4 className={`text-xl font-bold ${content.className || ''}`}>{content.text}</h4>;
+      case 'h5':
+        return <h5 className={`text-lg font-bold ${content.className || ''}`}>{content.text}</h5>;
+      case 'h6':
+        return <h6 className={`text-base font-bold ${content.className || ''}`}>{content.text}</h6>;
+      default:
+        return <p className={`text-base ${content.className || ''}`}>{content.text}</p>;
+    }
   };
 
   return (
-    <div
-      className={cn(
-        'relative group transition-all duration-200',
-        backgroundColor,
-        paddingClasses[padding]
-      )}
+    <div 
+      className="text-component"
+      onClick={() => onEdit?.(component.id, content)}
     >
-      <p
-        className={cn(
-          'whitespace-pre-wrap break-words',
-          color,
-          sizeClasses[size],
-          fontWeightClasses[fontWeight],
-          {
-            'text-left': alignment === 'left',
-            'text-center': alignment === 'center',
-            'text-right': alignment === 'right'
-          }
-        )}
-      >
-        {text}
-      </p>
-      {onEdit && (
-        <button
-          onClick={onEdit}
-          className="absolute hidden group-hover:flex items-center justify-center top-2 right-2 w-8 h-8 bg-blue-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-            />
-          </svg>
-        </button>
-      )}
+      {getTextComponent()}
     </div>
   );
-}
+};
+
+export { Text };
+
+export const defaultTextContent = {
+  text: 'Texto de ejemplo',
+  variant: 'p',
+  className: ''
+};

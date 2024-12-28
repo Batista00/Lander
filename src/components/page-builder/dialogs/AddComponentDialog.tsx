@@ -5,190 +5,153 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Search } from 'lucide-react';
+import { ComponentType } from '@/types/components';
+import { BASIC_COMPONENTS, PREMIUM_COMPONENTS } from '../core/ComponentRegistry';
 
 interface AddComponentDialogProps {
   open: boolean;
-  onClose: () => void;
-  onAdd: (componentType: string) => void;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (componentType: ComponentType) => void;
   isPremiumUser?: boolean;
 }
 
-const COMPONENT_TYPES = [
-  {
-    id: 'topbar',
-    name: 'Top Bar',
-    description: 'Barra superior con información importante',
-    icon: Search,
-    category: 'basic',
-    tags: ['navegación', 'header'],
-    isPremium: false,
-  },
-  {
-    id: 'header',
-    name: 'Header',
-    description: 'Encabezado principal con navegación',
-    icon: Search,
-    category: 'basic',
-    tags: ['navegación', 'menu'],
-    isPremium: false,
-  },
-  {
-    id: 'hero',
-    name: 'Hero',
-    description: 'Sección principal destacada',
-    icon: Search,
-    category: 'basic',
-    tags: ['principal', 'destacado'],
-    isPremium: false,
-  },
-  {
-    id: 'features',
-    name: 'Features',
-    description: 'Muestra tus servicios o características principales',
-    icon: Search,
-    category: 'basic',
-    tags: ['servicios', 'features'],
-    isPremium: false,
-  },
-  {
-    id: 'services',
-    name: 'Services',
-    description: 'Lista detallada de servicios',
-    icon: Search,
-    category: 'premium',
-    tags: ['servicios', 'ofertas'],
-    isPremium: true,
-  },
-  {
-    id: 'testimonials',
-    name: 'Testimonials',
-    description: 'Testimonios de clientes satisfechos',
-    icon: Search,
-    category: 'premium',
-    tags: ['testimonios', 'reviews'],
-    isPremium: true,
-  },
-  {
-    id: 'pricing',
-    name: 'Pricing',
-    description: 'Planes y precios de tus servicios',
-    icon: Search,
-    category: 'premium',
-    tags: ['precios', 'planes'],
-    isPremium: true,
-  },
-  {
-    id: 'contact',
-    name: 'Contact',
-    description: 'Formulario de contacto',
-    icon: Search,
-    category: 'basic',
-    tags: ['contacto', 'formulario'],
-    isPremium: false,
-  }
-];
-
 export function AddComponentDialog({
   open,
-  onClose,
-  onAdd,
+  onOpenChange,
+  onSelect,
   isPremiumUser = false,
 }: AddComponentDialogProps) {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedCategory, setSelectedCategory] = React.useState('all');
 
-  const filteredComponents = COMPONENT_TYPES.filter(component => {
-    const matchesSearch = 
-      component.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      component.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      component.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesCategory = 
-      selectedCategory === 'all' || 
-      (selectedCategory === 'premium' && component.isPremium) ||
-      (selectedCategory === 'free' && !component.isPremium);
-    
-    return matchesSearch && matchesCategory;
-  });
+  // Combinar componentes básicos y premium
+  const allComponents = React.useMemo(() => {
+    const components = [
+      ...Object.entries(BASIC_COMPONENTS).map(([type, config]) => ({
+        type: type as ComponentType,
+        ...config,
+        isPremium: false
+      })),
+      ...Object.entries(PREMIUM_COMPONENTS).map(([type, config]) => ({
+        type: type as ComponentType,
+        ...config,
+        isPremium: true
+      }))
+    ];
+    return components;
+  }, []);
 
-  const handleAddComponent = (componentType: string, isPremium: boolean) => {
-    if (isPremium && !isPremiumUser) {
-      // toast.error('Esta es una característica premium. Por favor, actualiza tu plan para acceder.');
+  const filteredComponents = React.useMemo(() => {
+    return allComponents.filter(component => {
+      const matchesSearch = 
+        component.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        component.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (component.tags || []).some(tag => 
+          tag.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      
+      const matchesCategory = 
+        selectedCategory === 'all' || 
+        (selectedCategory === 'premium' && component.isPremium) ||
+        (selectedCategory === 'free' && !component.isPremium);
+      
+      return matchesSearch && matchesCategory;
+    });
+  }, [allComponents, searchTerm, selectedCategory]);
+
+  const handleSelectComponent = (componentType: ComponentType) => {
+    if (!componentType) {
+      console.error('Tipo de componente no válido');
       return;
     }
-    onAdd(componentType);
-    onClose();
+    onSelect(componentType);
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Añadir Componente</DialogTitle>
           <DialogDescription>
-            Elige un componente para añadir a tu página
+            Elige un componente para añadir a tu landing page
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="Buscar componentes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9"
-                />
-              </div>
-            </div>
-            <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-              <TabsList>
-                <TabsTrigger value="all">Todos</TabsTrigger>
-                <TabsTrigger value="free">Gratis</TabsTrigger>
-                <TabsTrigger value="premium">Premium</TabsTrigger>
-              </TabsList>
-            </Tabs>
+        <div className="space-y-4 py-4">
+          {/* Barra de búsqueda */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Buscar componentes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
 
+          {/* Filtros por categoría */}
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+            <TabsList className="w-full justify-start">
+              <TabsTrigger value="all">Todos</TabsTrigger>
+              <TabsTrigger value="free">Gratis</TabsTrigger>
+              <TabsTrigger value="premium">Premium</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Lista de componentes */}
           <ScrollArea className="h-[400px] pr-4">
             <div className="grid grid-cols-2 gap-4">
               {filteredComponents.map((component) => (
-                <Button
-                  key={component.id}
-                  onClick={() => handleAddComponent(component.id, component.isPremium)}
-                  className="flex flex-col items-start p-4 rounded-lg border border-gray-200 hover:border-blue-500 transition-colors"
+                <button
+                  key={component.type}
+                  onClick={() => handleSelectComponent(component.type)}
+                  className={`
+                    p-4 rounded-lg border text-left transition-all
+                    ${component.isPremium && !isPremiumUser
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:border-primary cursor-pointer'
+                    }
+                  `}
+                  disabled={component.isPremium && !isPremiumUser}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-medium">{component.name}</span>
-                    {component.isPremium && (
-                      <Badge variant="premium" className="text-xs">
-                        Premium
-                      </Badge>
+                  <div className="flex items-start space-x-3">
+                    {component.icon && (
+                      <component.icon className="h-5 w-5 mt-1" />
                     )}
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium">{component.name}</h3>
+                        {component.isPremium && (
+                          <Badge variant="secondary">Premium</Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {component.description}
+                      </p>
+                      {component.tags && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {component.tags.map((tag) => (
+                            <Badge key={tag} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-500">{component.description}</p>
-                </Button>
+                </button>
               ))}
             </div>
           </ScrollArea>
         </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};

@@ -8,6 +8,7 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   height?: number;
   className?: string;
   priority?: boolean;
+  fill?: boolean;
 }
 
 export function Image({
@@ -16,9 +17,18 @@ export function Image({
   width,
   height,
   className,
+  fill,
   priority = false,
   ...props
 }: ImageProps) {
+  const imageStyle = fill ? {
+    position: 'absolute',
+    height: '100%',
+    width: '100%',
+    inset: '0px',
+    objectFit: 'cover',
+  } : {};
+
   return (
     <img
       src={src}
@@ -27,6 +37,7 @@ export function Image({
       height={height}
       className={cn('max-w-full h-auto', className)}
       loading={priority ? 'eager' : 'lazy'}
+      style={imageStyle}
       {...props}
     />
   );

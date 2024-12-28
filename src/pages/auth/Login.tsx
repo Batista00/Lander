@@ -1,39 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Card } from '../../components/ui/card';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Blocks } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { FirebaseError } from 'firebase/app';
 
 const loginSchema = z.object({
   email: z.string().email('Correo electrónico inválido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-  rememberMe: z.boolean().optional(),
+  rememberMe: z.boolean().optional()
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
-
-const getFirebaseErrorMessage = (error: FirebaseError) => {
-  switch (error.code) {
-    case 'auth/invalid-credential':
-      return 'Correo electrónico o contraseña incorrectos';
-    case 'auth/user-not-found':
-      return 'No existe una cuenta con este correo electrónico';
-    case 'auth/wrong-password':
-      return 'Contraseña incorrecta';
-    case 'auth/too-many-requests':
-      return 'Demasiados intentos fallidos. Por favor, intente más tarde';
-    case 'auth/user-disabled':
-      return 'Esta cuenta ha sido deshabilitada';
-    default:
-      return 'Error al iniciar sesión. Por favor, intente de nuevo';
-  }
-};
 
 export function Login() {
   const [error, setError] = useState('');
@@ -53,7 +36,8 @@ export function Login() {
       navigate('/dashboard');
     } catch (err) {
       if (err instanceof FirebaseError) {
-        setError(getFirebaseErrorMessage(err));
+        // El mensaje de error ya es manejado por el AuthContext
+        setError('Por favor, verifica tus credenciales e intenta de nuevo.');
       } else {
         setError('Error al iniciar sesión. Por favor, intente de nuevo');
       }

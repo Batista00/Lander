@@ -1,142 +1,89 @@
 "use client";
 
-import React from 'react';
-import { Card, CardContent, CardMedia, Typography, Box, Chip, Rating } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import StarIcon from '@mui/icons-material/Star';
+import { Card, CardContent, CardMedia, Typography, Rating, Button, Chip } from "@mui/material";
+import { ShoppingCart, Eye } from "lucide-react";
 
-interface ProductCardProps {
+interface Seller {
+  id: string;
+  name: string;
+  rating: number;
+}
+
+interface Product {
   id: string;
   title: string;
   description: string;
   price: number;
-  category: string;
-  imageUrl: string;
-  rating?: number;
-  isPremium?: boolean;
+  image: string;
+  rating: number;
   sales: number;
-  seller: {
-    id: string;
-    name: string;
-    rating: number;
-  };
+  seller: Seller;
+  category: string;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({
-  id,
-  title,
-  description,
-  price,
-  category,
-  imageUrl,
-  rating = 0,
-  isPremium = false,
-  sales,
-  seller,
-}) => {
-  const navigate = useNavigate();
+interface ProductCardProps {
+  product: Product;
+}
 
-  const handleClick = () => {
-    navigate(`/marketplace/product/${id}`);
-  };
+export function ProductCard({ product }: ProductCardProps) {
+  const { title, description, price, image, rating, sales, seller, category } = product;
 
   return (
-    <Card
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        cursor: 'pointer',
-        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: 6,
-        },
-      }}
-      onClick={handleClick}
-    >
+    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-200">
       <CardMedia
         component="img"
         height="200"
-        image={imageUrl}
+        image={image || '/placeholder-template.jpg'}
         alt={title}
-        sx={{ objectFit: 'cover' }}
+        className="h-48 object-cover"
       />
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography variant="h6" component="h2" gutterBottom>
-            {title}
-          </Typography>
-          <Chip
-            label={`$${price}`}
+      <CardContent className="flex-grow flex flex-col">
+        <div className="mb-2">
+          <Chip 
+            label={category} 
+            size="small" 
+            className="mb-2"
             color="primary"
-            size="small"
+            variant="outlined"
           />
-        </Box>
-        
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            mb: 2,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
+        </div>
+        <Typography variant="h6" component="h3" className="mb-1 line-clamp-2">
+          {title}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" className="mb-2 line-clamp-2">
           {description}
         </Typography>
-
-        <Box sx={{ mt: 'auto' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Rating
-              value={rating}
-              readOnly
-              precision={0.5}
-              size="small"
-              emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
-            />
-            <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-              ({rating})
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <Chip
-              label={category}
+        <div className="flex items-center gap-2 mb-2">
+          <Rating value={rating} precision={0.5} size="small" readOnly />
+          <Typography variant="body2" color="text.secondary">
+            ({sales} ventas)
+          </Typography>
+        </div>
+        <Typography variant="body2" color="text.secondary" className="mb-2">
+          Por {seller.name}
+        </Typography>
+        <div className="mt-auto pt-2 flex items-center justify-between">
+          <Typography variant="h6" color="primary">
+            ${price.toFixed(2)}
+          </Typography>
+          <div className="flex gap-2">
+            <Button
               variant="outlined"
               size="small"
-            />
-            {isPremium && (
-              <Chip
-                label="Premium"
-                color="secondary"
-                size="small"
-              />
-            )}
-            <Chip
-              label={`${sales} ventas`}
-              variant="outlined"
+              startIcon={<Eye className="w-4 h-4" />}
+            >
+              Vista previa
+            </Button>
+            <Button
+              variant="contained"
               size="small"
-            />
-            <Chip
-              label={`por ${seller.name}`}
-              variant="outlined"
-              size="small"
-            />
-          </Box>
-        </Box>
+              startIcon={<ShoppingCart className="w-4 h-4" />}
+            >
+              Comprar
+            </Button>
+          </div>
+        </div>
       </CardContent>
-      <Box sx={{ display: 'flex', gap: 2, p: 2 }}>
-        <button className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90">
-          Vista previa
-        </button>
-        <button className="flex-1 rounded-md border border-primary bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-gray-50">
-          Comprar
-        </button>
-      </Box>
     </Card>
   );
-};
+}

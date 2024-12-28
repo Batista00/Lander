@@ -1,7 +1,9 @@
+"use client";
+
 import React from 'react';
-import { Button, Box, Typography, Alert } from '@mui/material';
+import { Button, Box, Typography, Alert, CircularProgress } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
-import { initializeFirestore } from '../../scripts/initializeFirestore';
+import { initializeMarketplace } from '@/services/marketplace/initialize';
 
 // Este componente solo se debe usar en desarrollo
 export const InitializeMarketplace: React.FC = () => {
@@ -21,10 +23,17 @@ export const InitializeMarketplace: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      await initializeFirestore(user.uid);
-      setSuccess(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al inicializar el marketplace');
+      setSuccess(false);
+
+      const result = await initializeMarketplace();
+      
+      if (result.success) {
+        setSuccess(true);
+      } else {
+        setError(result.error || 'Error desconocido');
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Error desconocido');
     } finally {
       setLoading(false);
     }
@@ -70,6 +79,7 @@ export const InitializeMarketplace: React.FC = () => {
         disabled={loading}
         color="warning"
         size="small"
+        startIcon={loading ? <CircularProgress size={20} /> : null}
       >
         {loading ? 'Inicializando...' : 'Inicializar Datos de Prueba'}
       </Button>

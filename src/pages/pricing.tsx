@@ -1,120 +1,224 @@
-import { motion } from 'framer-motion';
-import { CheckCircle2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+// @ts-nocheck
+import React from 'react';
+import { Container, Grid, Card, CardContent, CardActions, Button, Typography, Box, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { PlanType } from '@/types/plans';
+import { PLANS } from '@/data/plans';
+
+declare global {
+  interface Window {
+    MercadoPago: any;
+  }
+}
 
 export function Pricing() {
-  const plans = [
-    {
-      name: "Básico",
-      price: "Gratis",
-      features: [
-        "1 Landing Page",
-        "Plantillas Básicas",
-        "Análisis Básico",
-        "Soporte por Email"
-      ]
-    },
-    {
-      name: "Pro",
-      price: "$19/mes",
-      popular: true,
-      features: [
-        "10 Landing Pages",
-        "Todas las Plantillas",
-        "Análisis Avanzado",
-        "Soporte Prioritario",
-        "Dominio Personalizado",
-        "A/B Testing"
-      ]
-    },
-    {
-      name: "Empresa",
-      price: "$49/mes",
-      features: [
-        "Landing Pages Ilimitadas",
-        "Plantillas Exclusivas",
-        "Análisis Premium",
-        "Soporte 24/7",
-        "Múltiples Dominios",
-        "API Access"
-      ]
+  const { user } = useAuth();
+
+  const handleUpgrade = async (planId: PlanType) => {
+    try {
+      if (!user) {
+        toast.error('Debes iniciar sesión para actualizar tu plan');
+        return;
+      }
+
+      if (planId === 'free') {
+        // Actualizar directamente al plan gratuito
+        const response = await fetch('http://localhost:5000/api/payment/upgrade-free', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await user.getIdToken()}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al actualizar al plan gratuito');
+        }
+
+        const data = await response.json();
+        toast.success('Plan actualizado correctamente');
+        return;
+      }
+
+      // Crear preferencia de pago para planes pagos
+      const plan = PLANS[planId];
+      const response = await fetch('http://localhost:5000/api/payment/create-preference', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await user.getIdToken()}`
+        },
+        body: JSON.stringify({
+          planId,
+          title: `Plan ${plan.name}`,
+          price: plan.price
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al crear la preferencia de pago');
+      }
+
+      const { preferenceId } = await response.json();
+      
+      // Inicializar el botón de pago de MercadoPago
+      const mp = new window.MercadoPago(import.meta.env.VITE_MP_PUBLIC_KEY, {
+        locale: 'es-AR'
+      });
+
+      // Mostrar el modal de pago
+      const modal = document.createElement('div');
+      modal.className = 'payment-modal';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <h2>Proceder al Pago</h2>
+          <div class="cho-container"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      // Agregar estilos para el modal
+      const style = document.createElement('style');
+      style.textContent = `
+        .payment-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+        .modal-content {
+          background: white;
+          padding: 2rem;
+          border-radius: 8px;
+          text-align: center;
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Inicializar el botón de pago
+      mp.checkout({
+        preference: {
+          id: preferenceId
+        },
+        render: {
+          container: '.cho-container',
+          label: 'Pagar',
+        }
+      });
+
+      // Cerrar el modal cuando se hace clic fuera de él
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          document.body.removeChild(modal);
+          document.head.removeChild(style);
+        }
+      });
+
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al procesar la solicitud');
     }
-  ];
+  };
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] pt-32">
-      <div className="fixed inset-0 pattern-background" />
-      
-      <div className="container relative z-10 max-w-7xl mx-auto px-4">
-        <div className="text-center mb-16">
-          <motion.h1 
-            className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-transparent bg-clip-text"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            Planes que se adaptan a ti
-          </motion.h1>
-          <motion.p 
-            className="text-gray-300 max-w-2xl mx-auto text-lg"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            Elige el plan que mejor se ajuste a tus necesidades y comienza a crear landing pages increíbles
-          </motion.p>
-        </div>
+    <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Typography variant="h2" component="h1" align="center" gutterBottom>
+        Planes y Precios
+      </Typography>
+      <Typography variant="h6" align="center" color="text.secondary" paragraph>
+        Elige el plan que mejor se adapte a tus necesidades
+      </Typography>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={index}
-              className={`relative ${plan.popular ? 'scale-105' : ''}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <div className={`
-                h-full p-8 rounded-2xl border backdrop-blur-xl
-                ${plan.popular 
-                  ? 'bg-gradient-to-b from-[#00E5B0]/10 to-[#FF1F8C]/10 border-[#00E5B0]/50' 
-                  : 'bg-white/5 border-white/10'
+      <Grid container spacing={4} justifyContent="center" sx={{ mt: 4 }}>
+        {Object.values(PLANS).map((plan) => (
+          <Grid item key={plan.id} xs={12} sm={6} md={4}>
+            <Card
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'relative',
+                overflow: 'visible',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 6,
+                  transition: 'all 0.3s ease'
                 }
-              `}>
-                {plan.popular && (
-                  <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-white">
-                    Más Popular
-                  </span>
-                )}
-                <div className="text-center mb-8">
-                  <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-                  <div className="text-3xl font-bold text-white mb-4">{plan.price}</div>
-                </div>
-                <ul className="space-y-4 mb-8">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center text-gray-300">
-                      <CheckCircle2 className="w-5 h-5 text-[#00E5B0] mr-2" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to="/auth/register"
-                  className={`
-                    block w-full py-3 px-6 rounded-xl text-center font-medium transition-all duration-300
-                    ${plan.popular
-                      ? 'bg-gradient-to-r from-[#00E5B0] to-[#FF1F8C] text-white hover:opacity-90'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                    }
-                  `}
+              }}
+            >
+              {plan.id === 'premium' && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: -12,
+                    right: -12,
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    px: 2,
+                    py: 0.5,
+                    borderRadius: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 'bold'
+                  }}
                 >
-                  Comenzar Ahora
-                </Link>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </div>
+                  Popular
+                </Box>
+              )}
+
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography gutterBottom variant="h5" component="h2" align="center">
+                  {plan.name}
+                </Typography>
+                <Typography variant="h4" component="p" align="center" sx={{ my: 2 }}>
+                  ${plan.price}
+                  <Typography variant="subtitle1" component="span" color="text.secondary">
+                    /mes
+                  </Typography>
+                </Typography>
+
+                <List dense>
+                  {plan.features.map((feature, index) => (
+                    <ListItem key={index}>
+                      <ListItemIcon>
+                        <CheckIcon color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary={feature} />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+
+              <CardActions sx={{ justifyContent: 'center', pb: 3 }}>
+                <Button
+                  variant={plan.id === 'premium' ? 'contained' : 'outlined'}
+                  color="primary"
+                  size="large"
+                  onClick={() => handleUpgrade(plan.id)}
+                  sx={{
+                    px: 4,
+                    ...(plan.id === 'premium' && {
+                      bgcolor: 'primary.main',
+                      '&:hover': {
+                        bgcolor: 'primary.dark'
+                      }
+                    })
+                  }}
+                >
+                  {plan.price === 0 ? 'Comenzar Gratis' : 'Actualizar Plan'}
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
   );
 }

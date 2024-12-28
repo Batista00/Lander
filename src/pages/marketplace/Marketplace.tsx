@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Box, Container, Tabs, Tab, Typography, Button } from '@mui/material';
 import { MembershipTiers } from '../../components/marketplace/membership/MembershipTiers';
@@ -7,6 +9,7 @@ import { ProductGrid } from '../../components/marketplace/product-grid';
 import { QuickPreview } from '../../components/marketplace/preview/QuickPreview';
 import { AchievementSystem } from '../../components/marketplace/rewards/AchievementSystem';
 import { AdvancedAnalytics } from '../../components/marketplace/analytics/AdvancedAnalytics';
+import { InitializeMarketplace } from '@/components/marketplace/InitializeMarketplace';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -53,23 +56,20 @@ export const Marketplace: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Marketplace
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Descubre, compra y vende templates increíbles
-        </Typography>
-      </Box>
-
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
+    <Container maxWidth="xl">
+      {process.env.NODE_ENV === 'development' && (
+        <Box sx={{ mb: 4 }}>
+          <InitializeMarketplace />
+        </Box>
+      )}
+      
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 4 }}>
+        <Tabs value={tabValue} onChange={handleTabChange} aria-label="marketplace tabs">
           <Tab label="Templates" />
           <Tab label="Membresías" />
           <Tab label="Recompensas" />
-          <Tab label="Logros" />
-          <Tab label="Analytics" />
+          <Tab label="Dashboard" />
+          <Tab label="Análisis" />
         </Tabs>
       </Box>
 

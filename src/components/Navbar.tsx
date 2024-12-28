@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Menu,
@@ -30,6 +30,7 @@ export function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const {
     handleDashboard,
     handleAccount,
@@ -38,7 +39,11 @@ export function Navbar() {
     handleFeatures,
     handlePricing,
     handleCommunity,
-    handleSupport
+    handleSupport,
+    handleMarketplace,
+    handleMyPurchases,
+    handleFavorites,
+    handleMyProducts
   } = useNavigation();
 
   const notifications = [
@@ -70,10 +75,13 @@ export function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center space-x-2"
+          >
             <Blocks className="w-8 h-8 text-[#00E5B0]" />
             <span className="text-2xl font-bold text-[#00E5B0]">LANDER</span>
-          </Link>
+          </button>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
@@ -108,13 +116,13 @@ export function Navbar() {
             {user ? (
               <>
                 {/* Dashboard Button */}
-                <Link
-                  to="/dashboard"
+                <button
+                  onClick={handleDashboard}
                   className="hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors text-white"
                 >
                   <Rocket className="w-4 h-4" />
                   <span>Dashboard</span>
-                </Link>
+                </button>
 
                 {/* Notifications */}
                 <div className="relative">
@@ -171,34 +179,46 @@ export function Navbar() {
                         exit={{ opacity: 0, y: 10 }}
                         className="absolute right-0 mt-2 w-48 bg-black/90 backdrop-blur-xl border border-white/10 rounded-lg shadow-lg py-2"
                       >
-                        <Link
-                          to="/dashboard/marketplace"
-                          className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
+                        <button
+                          onClick={() => {
+                            handleMarketplace();
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
                         >
                           <ShoppingCart className="w-4 h-4" />
                           <span>Marketplace</span>
-                        </Link>
-                        <Link
-                          to="/dashboard/marketplace/my-purchases"
-                          className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleMyPurchases();
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
                         >
                           <ShoppingBag className="w-4 h-4" />
                           <span>Mis Compras</span>
-                        </Link>
-                        <Link
-                          to="/dashboard/marketplace/favorites"
-                          className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleFavorites();
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
                         >
                           <Heart className="w-4 h-4" />
                           <span>Favoritos</span>
-                        </Link>
-                        <Link
-                          to="/dashboard/marketplace/my-products"
-                          className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleMyProducts();
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
                         >
                           <Package className="w-4 h-4" />
                           <span>Mis Productos</span>
-                        </Link>
+                        </button>
                         <div className="border-t border-white/10 my-2"></div>
                         <button
                           onClick={handleLogout}
@@ -214,18 +234,18 @@ export function Navbar() {
               </>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link
-                  to="/auth/login"
+                <button
+                  onClick={() => navigate('/auth/login')}
                   className="text-white hover:text-[#00E5B0] transition-colors px-4 py-2"
                 >
                   Iniciar Sesión
-                </Link>
-                <Link
-                  to="/auth/register"
+                </button>
+                <button
+                  onClick={() => navigate('/auth/register')}
                   className="px-4 py-2 rounded-full bg-gradient-to-r from-[#FF1F8C] to-[#00E5B0] text-white font-medium hover:opacity-90 transition-all"
                 >
                   Registrarse
-                </Link>
+                </button>
               </div>
             )}
 
@@ -250,48 +270,118 @@ export function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden py-4"
+              className="md:hidden fixed top-20 left-0 right-0 bg-black/90 backdrop-blur-xl border-b border-white/10 z-50"
             >
-              <div className="flex flex-col space-y-4">
-                <button
-                  onClick={handleFeatures}
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Características
-                </button>
-                <button
-                  onClick={handlePricing}
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Precios
-                </button>
-                <button
-                  onClick={handleCommunity}
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Comunidad
-                </button>
-                <button
-                  onClick={handleSupport}
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Soporte
-                </button>
-                {!user && (
+              <div className="flex flex-col space-y-4 p-4">
+                {user ? (
                   <>
-                    <hr className="border-white/10" />
-                    <Link
-                      to="/auth/login"
+                    <button
+                      onClick={() => {
+                        handleDashboard();
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
+                    >
+                      <Rocket className="w-4 h-4" />
+                      <span>Dashboard</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleMarketplace();
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>Marketplace</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleMyPurchases();
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Mis Compras</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleFavorites();
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
+                    >
+                      <Heart className="w-4 h-4" />
+                      <span>Favoritos</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleMyProducts();
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
+                    >
+                      <Package className="w-4 h-4" />
+                      <span>Mis Productos</span>
+                    </button>
+                    <div className="border-t border-white/10 my-2"></div>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Cerrar Sesión</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleFeatures}
+                      className="text-gray-300 hover:text-white transition-colors"
+                    >
+                      Características
+                    </button>
+                    <button
+                      onClick={handlePricing}
+                      className="text-gray-300 hover:text-white transition-colors"
+                    >
+                      Precios
+                    </button>
+                    <button
+                      onClick={handleCommunity}
+                      className="text-gray-300 hover:text-white transition-colors"
+                    >
+                      Comunidad
+                    </button>
+                    <button
+                      onClick={handleSupport}
+                      className="text-gray-300 hover:text-white transition-colors"
+                    >
+                      Soporte
+                    </button>
+                    <div className="border-t border-white/10 my-2"></div>
+                    <button
+                      onClick={() => {
+                        navigate('/auth/login');
+                        setIsOpen(false);
+                      }}
                       className="text-white hover:text-[#00E5B0] transition-colors"
                     >
                       Iniciar Sesión
-                    </Link>
-                    <Link
-                      to="/auth/register"
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate('/auth/register');
+                        setIsOpen(false);
+                      }}
                       className="px-4 py-2 rounded-full bg-gradient-to-r from-[#FF1F8C] to-[#00E5B0] text-white font-medium hover:opacity-90 transition-all text-center"
                     >
                       Registrarse
-                    </Link>
+                    </button>
                   </>
                 )}
               </div>

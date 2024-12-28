@@ -20,7 +20,7 @@ interface ModernStatsProps {
   isEditing?: boolean;
 }
 
-export const ModernStats: React.FC<ModernStatsProps> = ({ data, onEdit, isEditing }) => {
+const ModernStats = ({ data, onEdit, isEditing }: ModernStatsProps) => {
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,

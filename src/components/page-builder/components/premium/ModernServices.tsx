@@ -19,7 +19,7 @@ interface ModernServicesProps {
   isEditing?: boolean;
 }
 
-export const ModernServices: React.FC<ModernServicesProps> = ({ data, onEdit, isEditing }) => {
+const ModernServices: React.FC<ModernServicesProps> = ({ data, onEdit, isEditing }) => {
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,

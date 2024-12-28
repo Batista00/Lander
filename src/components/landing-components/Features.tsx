@@ -1,130 +1,104 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { Icon } from 'lucide-react';
 
 interface Feature {
-  id: string;
   icon?: string;
   title: string;
   description: string;
 }
 
 interface FeaturesProps {
-  data: {
-    title: string;
-    subtitle: string;
-    features: Feature[];
+  content: {
+    title?: string;
+    subtitle?: string;
+    features?: Feature[];
+    layout?: 'grid' | 'list';
     columns?: 2 | 3 | 4;
-    style?: 'minimal' | 'cards' | 'modern';
     backgroundColor?: string;
+    textColor?: string;
+    iconColor?: string;
+    spacing?: 'normal' | 'compact' | 'wide';
   };
-  isEditing?: boolean;
-  onEdit?: (field: string, value: any) => void;
 }
 
-export const Features: React.FC<FeaturesProps> = ({ data, isEditing, onEdit }) => {
+export const Features: React.FC<FeaturesProps> = ({ content }) => {
   const {
-    title = 'Características Principales',
-    subtitle = 'Descubre todo lo que podemos hacer por ti',
-    features = [],
+    title = 'Nuestras Características',
+    subtitle = 'Descubre lo que nos hace únicos',
+    features = [
+      {
+        icon: 'Zap',
+        title: 'Rápido y Eficiente',
+        description: 'Optimizado para un rendimiento excepcional'
+      },
+      {
+        icon: 'Shield',
+        title: 'Seguro',
+        description: 'Protección de datos de primer nivel'
+      },
+      {
+        icon: 'Smartphone',
+        title: 'Responsive',
+        description: 'Se adapta a cualquier dispositivo'
+      }
+    ],
+    layout = 'grid',
     columns = 3,
-    style = 'modern',
-    backgroundColor = 'bg-white'
-  } = data;
+    backgroundColor = 'bg-white',
+    textColor = 'text-gray-900',
+    iconColor = 'text-blue-600',
+    spacing = 'normal'
+  } = content || {};
 
-  const containerStyles = cn(
-    'py-24',
-    backgroundColor,
-    {
-      'bg-gray-50': style === 'minimal',
-      'bg-white': style === 'cards',
-      'bg-gradient-to-b from-gray-50 to-white': style === 'modern'
-    }
-  );
-
-  const featureStyles = cn(
-    'p-6 rounded-xl',
-    {
-      'bg-white shadow-lg hover:shadow-xl transition-shadow': style === 'cards',
-      'bg-transparent': style === 'minimal',
-      'bg-white/50 backdrop-blur-sm border border-gray-200 hover:border-blue-500 transition-colors':
-        style === 'modern'
-    }
-  );
-
-  const gridCols = {
-    2: 'md:grid-cols-2',
-    3: 'md:grid-cols-3',
-    4: 'md:grid-cols-4'
-  };
-
-  const handleEdit = (field: string, value: any) => {
-    if (isEditing && onEdit) {
-      onEdit(field, value);
+  const getSpacingClass = () => {
+    switch (spacing) {
+      case 'compact':
+        return 'py-8 gap-4';
+      case 'wide':
+        return 'py-24 gap-12';
+      default:
+        return 'py-16 gap-8';
     }
   };
 
-  const handleFeatureEdit = (featureId: string, field: string, value: string) => {
-    if (isEditing && onEdit) {
-      const updatedFeatures = features.map(feature =>
-        feature.id === featureId ? { ...feature, [field]: value } : feature
-      );
-      handleEdit('features', updatedFeatures);
+  const getGridClass = () => {
+    switch (columns) {
+      case 2:
+        return 'md:grid-cols-2';
+      case 4:
+        return 'md:grid-cols-2 lg:grid-cols-4';
+      default:
+        return 'md:grid-cols-3';
     }
   };
 
   return (
-    <section className={containerStyles}>
+    <section className={`${backgroundColor} ${textColor} ${getSpacingClass()}`}>
       <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          {isEditing ? (
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => handleEdit('title', e.target.value)}
-              className="text-4xl font-bold mb-6 w-full text-center bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-            />
-          ) : (
-            <h2 className="text-4xl font-bold mb-6">{title}</h2>
-          )}
-
-          {isEditing ? (
-            <textarea
-              value={subtitle}
-              onChange={(e) => handleEdit('subtitle', e.target.value)}
-              className="text-xl text-gray-600 w-full text-center bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-            />
-          ) : (
-            <p className="text-xl text-gray-600">{subtitle}</p>
-          )}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4">{title}</h2>
+          <p className="text-xl opacity-80 max-w-2xl mx-auto">{subtitle}</p>
         </div>
-
-        <div className={cn('grid gap-8', gridCols[columns])}>
-          {features.map((feature) => (
-            <div key={feature.id} className={featureStyles}>
-              {isEditing ? (
-                <>
-                  <input
-                    type="text"
-                    value={feature.title}
-                    onChange={(e) =>
-                      handleFeatureEdit(feature.id, 'title', e.target.value)
-                    }
-                    className="text-xl font-semibold mb-4 w-full bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                  />
-                  <textarea
-                    value={feature.description}
-                    onChange={(e) =>
-                      handleFeatureEdit(feature.id, 'description', e.target.value)
-                    }
-                    className="text-gray-600 w-full bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                  />
-                </>
-              ) : (
-                <>
-                  <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                </>
+        
+        <div className={`${layout === 'grid' ? 'grid' : 'space-y-8'} ${getGridClass()}`}>
+          {features.map((feature, index) => (
+            <div 
+              key={index}
+              className={`${
+                layout === 'grid' 
+                  ? 'p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow' 
+                  : 'flex items-start gap-4'
+              }`}
+            >
+              {feature.icon && (
+                <div className={`${iconColor} ${layout === 'grid' ? 'mb-4' : 'flex-shrink-0'}`}>
+                  <Icon name={feature.icon} size={24} />
+                </div>
               )}
+              <div>
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="opacity-80">{feature.description}</p>
+              </div>
             </div>
           ))}
         </div>

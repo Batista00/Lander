@@ -21,7 +21,7 @@ interface ModernTestimonialsProps {
   isEditing?: boolean;
 }
 
-export const ModernTestimonials: React.FC<ModernTestimonialsProps> = ({ data, onEdit, isEditing }) => {
+const ModernTestimonials: React.FC<ModernTestimonialsProps> = ({ data, onEdit, isEditing }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { ref, inView } = useInView({
     triggerOnce: true,

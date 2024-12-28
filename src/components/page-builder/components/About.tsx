@@ -1,195 +1,165 @@
 import React from 'react';
+import { Component } from '@/types/landing';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { AboutProps } from '../interfaces/ComponentInterfaces';
+
+interface AboutProps {
+  component: Component;
+  mode?: 'preview' | 'published' | 'edit';
+  onChange?: (component: Component) => void;
+}
 
 export const About: React.FC<AboutProps> = ({
-  content,
-  isEditable = false,
-  onEdit
+  component,
+  mode = 'preview',
+  onChange,
 }) => {
   const {
     title = 'Sobre Nosotros',
-    description,
-    image,
-    imagePosition = 'right',
-    statistics = [],
-    features = [],
-    backgroundColor = 'bg-white',
-    textColor = 'text-gray-900'
-  } = content;
+    subtitle = 'Nuestra Historia',
+    description = 'Descubre nuestra historia y valores',
+    image = '',
+    values = [],
+    buttonText = 'Conoce más',
+    buttonLink = '#',
+    layout = 'left'
+  } = component.content;
 
-  const containerStyles = cn(
-    'py-24',
-    backgroundColor
-  );
+  const isEditing = mode === 'edit';
 
-  const contentStyles = cn(
-    'flex flex-col lg:flex-row items-center gap-12',
-    {
-      'lg:flex-row-reverse': imagePosition === 'left'
-    }
-  );
+  const handleChange = (field: string, value: string) => {
+    if (!onChange) return;
+    
+    onChange({
+      ...component,
+      content: {
+        ...component.content,
+        [field]: value
+      }
+    });
+  };
 
   return (
-    <section className={containerStyles}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={contentStyles}>
-          {/* Contenido de texto */}
-          <div className="flex-1 lg:max-w-xl">
-            {isEditable ? (
+    <div className="relative group py-16">
+      <div className="container mx-auto px-4">
+        <div className={cn(
+          'grid gap-12',
+          layout === 'left' ? 'md:grid-cols-[1fr_1.5fr]' : 'md:grid-cols-[1.5fr_1fr]',
+          layout === 'left' ? '' : 'md:grid-flow-dense'
+        )}>
+          <div className={cn(
+            'flex flex-col justify-center',
+            layout === 'left' ? 'md:pr-12' : 'md:pl-12'
+          )}>
+            {isEditing ? (
+              <input
+                type="text"
+                value={subtitle}
+                onChange={(e) => handleChange('subtitle', e.target.value)}
+                className="text-lg font-semibold text-primary mb-2 bg-transparent border-none focus:ring-2 focus:ring-primary"
+              />
+            ) : (
+              <h3 className="text-lg font-semibold text-primary mb-2">
+                {subtitle}
+              </h3>
+            )}
+
+            {isEditing ? (
               <input
                 type="text"
                 value={title}
-                onChange={(e) => onEdit?.('title', e.target.value)}
-                className={cn(
-                  'w-full bg-transparent border-none focus:ring-2 focus:ring-blue-500 text-4xl font-bold mb-6',
-                  textColor
-                )}
+                onChange={(e) => handleChange('title', e.target.value)}
+                className="text-3xl font-bold mb-6 bg-transparent border-none focus:ring-2 focus:ring-primary"
               />
             ) : (
-              <h2 className={cn('text-4xl font-bold mb-6', textColor)}>
+              <h2 className="text-3xl font-bold mb-6">
                 {title}
               </h2>
             )}
 
-            {isEditable ? (
+            {isEditing ? (
               <textarea
                 value={description}
-                onChange={(e) => onEdit?.('description', e.target.value)}
-                className="w-full bg-transparent border-none focus:ring-2 focus:ring-blue-500 text-lg text-gray-600"
-                rows={5}
+                onChange={(e) => handleChange('description', e.target.value)}
+                className="text-lg mb-8 bg-transparent border-none focus:ring-2 focus:ring-primary"
+                rows={4}
               />
             ) : (
-              <p className="text-lg text-gray-600 mb-8">{description}</p>
+              <p className="text-lg mb-8">
+                {description}
+              </p>
             )}
 
-            {/* Características */}
-            {features.length > 0 && (
-              <div className="mt-8 grid grid-cols-1 gap-4">
-                {features.map((feature, index) => (
-                  <div key={index} className="flex items-start gap-4">
-                    {feature.icon && (
-                      <div className="flex-shrink-0 w-6 h-6 text-blue-600">
-                        {isEditable ? (
-                          <input
-                            type="text"
-                            value={feature.icon}
-                            onChange={(e) => {
-                              const updatedFeatures = [...features];
-                              updatedFeatures[index] = {
-                                ...feature,
-                                icon: e.target.value
-                              };
-                              onEdit?.('features', updatedFeatures);
-                            }}
-                            className="w-full bg-transparent border-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        ) : (
-                          <img
-                            src={feature.icon}
-                            alt=""
-                            className="w-full h-full object-contain"
-                          />
-                        )}
+            {values.length > 0 && (
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                {values.map((value: { title: string; description: string }, index: number) => (
+                  <div key={index} className="flex items-start">
+                    {value.icon && (
+                      <div className="text-primary text-2xl mr-4">
+                        {value.icon}
                       </div>
                     )}
-                    {isEditable ? (
-                      <input
-                        type="text"
-                        value={feature.text}
-                        onChange={(e) => {
-                          const updatedFeatures = [...features];
-                          updatedFeatures[index] = {
-                            ...feature,
-                            text: e.target.value
-                          };
-                          onEdit?.('features', updatedFeatures);
-                        }}
-                        className="flex-1 bg-transparent border-none focus:ring-2 focus:ring-blue-500 text-gray-600"
-                      />
-                    ) : (
-                      <p className="text-gray-600">{feature.text}</p>
-                    )}
+                    <div>
+                      {isEditing ? (
+                        <>
+                          <input
+                            type="text"
+                            value={value.title}
+                            onChange={(e) => {
+                              const newValues = [...values];
+                              newValues[index] = { ...value, title: e.target.value };
+                              handleChange('values', JSON.stringify(newValues));
+                            }}
+                            className="font-semibold mb-1 bg-transparent border-none focus:ring-2 focus:ring-primary"
+                          />
+                          <textarea
+                            value={value.description}
+                            onChange={(e) => {
+                              const newValues = [...values];
+                              newValues[index] = { ...value, description: e.target.value };
+                              handleChange('values', JSON.stringify(newValues));
+                            }}
+                            className="text-sm bg-transparent border-none focus:ring-2 focus:ring-primary"
+                            rows={2}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <h4 className="font-semibold mb-1">{value.title}</h4>
+                          <p className="text-sm">{value.description}</p>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Estadísticas */}
-            {statistics.length > 0 && (
-              <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
-                {statistics.map((stat, index) => (
-                  <div key={index} className="text-center">
-                    {isEditable ? (
-                      <>
-                        <input
-                          type="text"
-                          value={stat.value}
-                          onChange={(e) => {
-                            const updatedStats = [...statistics];
-                            updatedStats[index] = {
-                              ...stat,
-                              value: e.target.value
-                            };
-                            onEdit?.('statistics', updatedStats);
-                          }}
-                          className={cn(
-                            'w-full bg-transparent border-none focus:ring-2 focus:ring-blue-500 text-3xl font-bold text-center',
-                            textColor
-                          )}
-                        />
-                        <input
-                          type="text"
-                          value={stat.label}
-                          onChange={(e) => {
-                            const updatedStats = [...statistics];
-                            updatedStats[index] = {
-                              ...stat,
-                              label: e.target.value
-                            };
-                            onEdit?.('statistics', updatedStats);
-                          }}
-                          className="w-full bg-transparent border-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-600 text-center mt-1"
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <div className={cn('text-3xl font-bold', textColor)}>
-                          {stat.value}
-                        </div>
-                        <div className="text-sm text-gray-600 mt-1">
-                          {stat.label}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
+            {buttonText && (
+              <Button
+                variant="default"
+                onClick={() => buttonLink && window.open(buttonLink, '_blank')}
+              >
+                {buttonText}
+              </Button>
             )}
           </div>
 
-          {/* Imagen */}
-          {image && (
-            <div className="flex-1 w-full lg:max-w-xl">
-              {isEditable ? (
-                <input
-                  type="text"
-                  value={image}
-                  onChange={(e) => onEdit?.('image', e.target.value)}
-                  className="w-full bg-transparent border-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="URL de la imagen"
-                />
-              ) : (
-                <img
-                  src={image}
-                  alt="About Us"
-                  className="w-full h-auto rounded-lg shadow-lg"
-                />
-              )}
-            </div>
-          )}
+          <div className="relative">
+            {image ? (
+              <img
+                src={image}
+                alt={title}
+                className="w-full h-full object-cover rounded-lg shadow-lg"
+              />
+            ) : (
+              <div className="w-full h-full min-h-[400px] bg-gray-100 rounded-lg flex items-center justify-center">
+                <p className="text-gray-400">Imagen no disponible</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 };

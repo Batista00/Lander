@@ -23,7 +23,7 @@ interface ModernContactProps {
   isEditing?: boolean;
 }
 
-export const ModernContact: React.FC<ModernContactProps> = ({ data, onEdit, isEditing }) => {
+const ModernContact: React.FC<ModernContactProps> = ({ data, onEdit, isEditing }) => {
   const [formState, setFormState] = useState({
     name: '',
     email: '',

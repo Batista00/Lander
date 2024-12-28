@@ -1,30 +1,18 @@
+import React from 'react';
+import { Component, ComponentType } from '@/types/landing';
 import { cn } from '@/lib/utils';
 
 interface VideoProps {
-  id: string;
-  content: {
-    url: string;
-    type?: 'youtube' | 'vimeo' | 'custom';
-    title?: string;
-    autoplay?: boolean;
-    controls?: boolean;
-    muted?: boolean;
-    loop?: boolean;
-    aspectRatio?: 'square' | 'video' | 'wide';
-    width?: 'small' | 'medium' | 'large' | 'full';
-    alignment?: 'left' | 'center' | 'right';
-    rounded?: boolean;
-    shadow?: 'none' | 'small' | 'medium' | 'large';
-    overlay?: boolean;
-    overlayColor?: string;
-    description?: string;
-  };
-  onEdit?: () => void;
+  component: Component & { type: ComponentType.Video };
+  mode?: 'preview' | 'published' | 'edit';
 }
 
-export function Video({ id, content, onEdit }: VideoProps) {
+export const Video: React.FC<VideoProps> = ({
+  component,
+  mode = 'preview'
+}) => {
   const {
-    url,
+    url = '',
     type = 'youtube',
     title = '',
     autoplay = false,
@@ -39,7 +27,7 @@ export function Video({ id, content, onEdit }: VideoProps) {
     overlay = false,
     overlayColor = 'bg-black/50',
     description
-  } = content;
+  } = component.content;
 
   const aspectRatioClasses = {
     square: 'aspect-square',
@@ -79,17 +67,22 @@ export function Video({ id, content, onEdit }: VideoProps) {
   };
 
   return (
-    <div className={cn(
-      "relative group",
-      widthClasses[width],
-      alignmentClasses[alignment]
-    )}>
-      <div className={cn(
-        "relative overflow-hidden",
-        aspectRatioClasses[aspectRatio],
-        shadowClasses[shadow],
-        { 'rounded-lg': rounded }
-      )}>
+    <div
+      className={cn(
+        "relative group",
+        widthClasses[width],
+        alignmentClasses[alignment],
+        component.styles?.spacing
+      )}
+    >
+      <div
+        className={cn(
+          "relative overflow-hidden",
+          aspectRatioClasses[aspectRatio],
+          shadowClasses[shadow],
+          { 'rounded-lg': rounded }
+        )}
+      >
         {type === 'custom' ? (
           <video
             src={url}
@@ -109,24 +102,18 @@ export function Video({ id, content, onEdit }: VideoProps) {
             className="absolute top-0 left-0 w-full h-full"
           />
         )}
-
         {overlay && (
-          <div className={cn(
-            "absolute inset-0 pointer-events-none",
-            overlayColor
-          )} />
+          <div className={cn("absolute inset-0", overlayColor)} />
         )}
       </div>
-
       {description && (
         <p className="mt-2 text-sm text-gray-600 text-center">
           {description}
         </p>
       )}
-
-      {onEdit && (
+      {mode === 'edit' && (
         <button
-          onClick={onEdit}
+          onClick={() => {}}
           className="absolute hidden group-hover:flex items-center justify-center top-2 right-2 w-8 h-8 bg-blue-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         >
           <svg
@@ -134,6 +121,7 @@ export function Video({ id, content, onEdit }: VideoProps) {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
           >
             <path
               strokeLinecap="round"
@@ -146,4 +134,4 @@ export function Video({ id, content, onEdit }: VideoProps) {
       )}
     </div>
   );
-}
+};

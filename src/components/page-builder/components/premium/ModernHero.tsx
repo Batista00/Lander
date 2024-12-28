@@ -23,7 +23,7 @@ interface ModernHeroProps {
   isEditing?: boolean;
 }
 
-export const ModernHero: React.FC<ModernHeroProps> = ({ data, onEdit, isEditing }) => {
+const ModernHero: React.FC<ModernHeroProps> = ({ data, onEdit, isEditing }) => {
   return (
     <div className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-blue-900 via-purple-900 to-blue-900">
       {/* Animated background elements */}

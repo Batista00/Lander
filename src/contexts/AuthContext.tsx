@@ -1,16 +1,18 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
-  getAuth, 
-  onAuthStateChanged, 
+  User,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  User,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
   setPersistence,
   browserLocalPersistence
 } from 'firebase/auth';
-import { auth } from '../lib/firebase';
-import { toast } from 'sonner';
+import { auth, db } from '@/lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { toast } from "@/components/ui/use-toast";
+import { FirebaseError } from 'firebase/app';
 
 interface AuthContextType {
   user: User | null;
@@ -18,74 +20,168 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Configurar persistencia al inicio
-    setPersistence(auth, browserLocalPersistence).catch(console.error);
+    setPersistence(auth, browserLocalPersistence)
+      .then(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          setUser(user);
+          setLoading(false);
+        });
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+        return () => unsubscribe();
+      })
+      .catch((error) => {
+        toast.error('Error al configurar la persistencia', error.message);
+        setLoading(false);
+      });
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  async function signIn(email: string, password: string) {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      setUser(userCredential.user);
-      toast.success('Inicio de sesión exitoso');
+      await signInWithEmailAndPassword(auth, email, password);
+      toast.success('Inicio de sesión exitoso', 'Bienvenido de vuelta');
     } catch (error) {
-      console.error('Error signing in:', error);
+      if (error instanceof FirebaseError) {
+        let errorMessage = 'Error al iniciar sesión';
+        switch (error.code) {
+          case 'auth/invalid-email':
+            errorMessage = 'El correo electrónico no es válido';
+            break;
+          case 'auth/user-disabled':
+            errorMessage = 'Esta cuenta ha sido deshabilitada';
+            break;
+          case 'auth/user-not-found':
+            errorMessage = 'No existe una cuenta con este correo electrónico';
+            break;
+          case 'auth/wrong-password':
+            errorMessage = 'La contraseña es incorrecta';
+            break;
+          default:
+            errorMessage = 'Error al iniciar sesión';
+        }
+        toast.error('Error de autenticación', errorMessage);
+      } else {
+        toast.error('Error inesperado', 'Ocurrió un error al intentar iniciar sesión');
+      }
       throw error;
     }
-  };
+  }
 
-  const signUp = async (email: string, password: string) => {
+  async function signUp(email: string, password: string) {
     try {
+      // Crear cuenta de autenticación
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      setUser(userCredential.user);
-      toast.success('Cuenta creada exitosamente');
+      
+      // Crear documento en Firestore
+      await setDoc(doc(db, 'developers', userCredential.user.uid), {
+        email: email,
+        name: 'Usuario sin nombre',
+        bio: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        portfolio: [],
+        skills: [],
+        socialLinks: []
+      });
+
+      toast.success('Registro exitoso', 'Tu cuenta ha sido creada');
     } catch (error) {
-      console.error('Error signing up:', error);
+      if (error instanceof FirebaseError) {
+        let errorMessage = 'Error al crear la cuenta';
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'Ya existe una cuenta con este correo electrónico';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'El correo electrónico no es válido';
+            break;
+          case 'auth/operation-not-allowed':
+            errorMessage = 'El registro con correo electrónico no está habilitado';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'La contraseña es demasiado débil';
+            break;
+          default:
+            errorMessage = 'Error al crear la cuenta';
+        }
+        toast.error('Error de registro', errorMessage);
+      } else {
+        toast.error('Error inesperado', 'Ocurrió un error al intentar crear la cuenta');
+      }
       throw error;
     }
-  };
+  }
 
-  const logout = async () => {
+  async function logout() {
     try {
       await signOut(auth);
-      setUser(null);
-      toast.success('Sesión cerrada exitosamente');
+      toast.success('Sesión cerrada', 'Has cerrado sesión correctamente');
     } catch (error) {
-      console.error('Error signing out:', error);
+      toast.error('Error al cerrar sesión', 'No se pudo cerrar la sesión correctamente');
       throw error;
     }
-  };
+  }
+
+  async function resetPassword(email: string) {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast.success(
+        'Correo enviado',
+        'Se ha enviado un correo con instrucciones para restablecer tu contraseña'
+      );
+    } catch (error) {
+      if (error instanceof FirebaseError) {
+        let errorMessage = 'Error al enviar el correo';
+        switch (error.code) {
+          case 'auth/invalid-email':
+            errorMessage = 'El correo electrónico no es válido';
+            break;
+          case 'auth/user-not-found':
+            errorMessage = 'No existe una cuenta con este correo electrónico';
+            break;
+          default:
+            errorMessage = 'Error al enviar el correo de restablecimiento';
+        }
+        toast.error('Error', errorMessage);
+      } else {
+        toast.error(
+          'Error inesperado',
+          'Ocurrió un error al intentar enviar el correo de restablecimiento'
+        );
+      }
+      throw error;
+    }
+  }
 
   const value = {
     user,
     loading,
     signIn,
     signUp,
-    logout
+    logout,
+    resetPassword,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+}

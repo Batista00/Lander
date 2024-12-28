@@ -1,30 +1,97 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Función para verificar si el usuario está autenticado
+    // Funciones de utilidad
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Función para verificar si el usuario es dueño del documento
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
+    function isValidContentType() {
+      return request.resource.contentType.matches('image/.*') ||
+             request.resource.contentType.matches('video/.*') ||
+             request.resource.contentType == 'application/pdf';
+    }
+
+    function isValidFileSize() {
+      return request.resource.size <= 10 * 1024 * 1024; // 10MB
+    }
+
+    function isValidImageSize() {
+      return request.resource.size <= 5 * 1024 * 1024; // 5MB para imágenes
+    }
+
+    function isWithinQuota(userId) {
+      let userFiles = storage.ref(userId).listAll();
+      return userFiles.items.length < 1000; // límite de 1000 archivos
+    }
+
+    // Reglas para archivos de landing pages
+    match /landing-pages/{landingId}/{fileName} {
+      allow read: if true;
+      
+      allow write: if 
+        isAuthenticated() && 
+        isOwner(request.resource.metadata.userId) &&
+        isValidContentType() &&
+        isValidImageSize() &&
+        isWithinQuota(request.auth.uid);
+    }
+
     // Reglas para archivos de templates
     match /templates/{templateId}/{fileName} {
-      // Cualquiera puede leer los archivos de templates
       allow read: if true;
-      // Solo usuarios autenticados pueden subir archivos
-      allow write: if isAuthenticated();
+      
+      allow write: if 
+        isAuthenticated() &&
+        isValidContentType() &&
+        isValidFileSize();
     }
 
     // Reglas para archivos de usuarios
     match /users/{userId}/{fileName} {
-      // Cualquiera puede leer los archivos públicos de usuarios
       allow read: if true;
-      // Solo el dueño puede subir archivos
-      allow write: if isAuthenticated() && isOwner(userId);
+      
+      allow write: if 
+        isAuthenticated() && 
+        isOwner(userId) &&
+        isValidContentType() &&
+        isValidFileSize() &&
+        isWithinQuota(userId);
+    }
+
+    // Reglas para archivos temporales (con auto-eliminación)
+    match /temp/{userId}/{fileName} {
+      allow read: if 
+        isAuthenticated() && 
+        isOwner(userId);
+      
+      allow write: if 
+        isAuthenticated() && 
+        isOwner(userId) &&
+        isValidContentType() &&
+        isValidFileSize();
+      
+      allow delete: if 
+        isAuthenticated() && 
+        isOwner(userId) ||
+        resource.metadata.timeCreated < request.time - duration.value(24, 'h');
+    }
+
+    // Reglas para archivos de leads (documentos adjuntos)
+    match /leads/{leadId}/{fileName} {
+      allow read: if 
+        isAuthenticated() && 
+        isOwner(get(/databases/$(database)/documents/leads/$(leadId)).data.userId);
+      
+      allow write: if 
+        isAuthenticated() &&
+        isOwner(get(/databases/$(database)/documents/leads/$(leadId)).data.userId) &&
+        isValidContentType() &&
+        request.resource.size <= 2 * 1024 * 1024; // 2MB para archivos de leads
     }
   }
 }

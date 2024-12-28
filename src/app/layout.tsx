@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { ChatWidget } from '@/components/chat/ChatWidget';
 import "./globals.css";
+import "@/components/chat/ChatWidget.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,9 +16,35 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const globalContext = `
+    Lander es una plataforma intuitiva para crear landing pages cautivadoras.
+    
+    Servicios principales:
+    - Constructor de páginas drag & drop
+    - Plantillas profesionales
+    - Optimización para conversiones
+    - Análisis de rendimiento
+    - Integración con herramientas de marketing
+    
+    Precios:
+    - Plan Básico: Ideal para emprendedores
+    - Plan Pro: Para negocios en crecimiento
+    - Plan Enterprise: Soluciones personalizadas
+    
+    Características destacadas:
+    - Interfaz intuitiva
+    - Componentes premium
+    - Optimización SEO
+    - Hosting incluido
+    - Soporte 24/7
+  `;
+
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="es">
+      <body className={inter.className}>
+        {children}
+        <ChatWidget pageContext={globalContext} />
+      </body>
     </html>
   );
 }

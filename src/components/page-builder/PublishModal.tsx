@@ -12,6 +12,8 @@ export function PublishModal({ onClose }: PublishModalProps) {
   const { components, publishInfo, publishLanding, unpublishLanding } = useLandingStore();
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [publicUrl, setPublicUrl] = useState('');
 
   const getPublicUrl = () => {
     if (typeof publishInfo?.url === 'string') {
@@ -25,49 +27,29 @@ export function PublishModal({ onClose }: PublishModalProps) {
   };
 
   const handlePublish = async () => {
+    setIsPublishing(true);
     try {
-      setIsPublishing(true);
-      setError('');
-      
-      if (!components.length) {
-        setError('No hay componentes para publicar. Añade al menos un componente.');
-        return;
-      }
-
-      const timestamp = Date.now();
-      const version = (publishInfo.version || 0) + 1;
-      const slug = `${timestamp}-v${version}`;
-      const baseUrl = window.location.origin;
-      const publicUrl = `${baseUrl}/p/${slug}`;
-      
-      const publishData = {
-        components,
-        version,
-        publishedAt: new Date().toISOString(),
-        url: publicUrl,
-        slug,
-        status: 'published',
-        analytics: {
-          views: 0,
-          lastView: null
-        },
+      await publishLanding({
         seo: {
           title: publishInfo.title || 'Mi Landing Page',
-          description: publishInfo.description || 'Una landing page creada con Landing Builder',
-          keywords: publishInfo.keywords || []
+          description: publishInfo.description || 'Una landing page creada con Landing Builder'
         }
-      };
-
-      await publishLanding(publishData);
+      });
       
-      // Verificar que la URL se haya generado correctamente
       const generatedUrl = getPublicUrl();
       if (!generatedUrl) {
         throw new Error('No se pudo generar la URL pública');
       }
-
-      window.open(generatedUrl, '_blank');
-      toast.success('¡Landing page publicada exitosamente!');
+      
+      setSuccessMessage(`¡Landing page publicada exitosamente! URL pública: ${generatedUrl}`);
+      setPublicUrl(generatedUrl);
+      toast.success('¡Landing page publicada exitosamente!', {
+        description: `Tu landing page está disponible en: ${generatedUrl}`,
+        action: {
+          label: 'Ver Publicada',
+          onClick: () => window.open(generatedUrl, '_blank')
+        },
+      });
       onClose();
       
     } catch (err) {
@@ -106,7 +88,7 @@ export function PublishModal({ onClose }: PublishModalProps) {
   };
 
   // Obtener la URL pública actual
-  const publicUrl = getPublicUrl();
+  const currentPublicUrl = getPublicUrl();
 
   return (
     <Dialog open={true} onClose={onClose} className="fixed inset-0 z-50 overflow-y-auto">
@@ -150,83 +132,45 @@ export function PublishModal({ onClose }: PublishModalProps) {
               </ul>
             </div>
 
-            {publishInfo.status === 'published' && publicUrl ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between rounded-lg border p-3">
-                  <span className="text-sm text-gray-600 truncate">{publicUrl}</span>
+            <div className="mt-8 flex justify-end gap-4">
+              {publishInfo.status === 'published' && (
+                <button
+                  onClick={handleUnpublish}
+                  className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                >
+                  Despublicar
+                </button>
+              )}
+              {publishInfo.status === 'published' ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => window.open(currentPublicUrl, '_blank')}
+                    className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  >
+                    <HiOutlineEye className="mr-2 -ml-1 h-5 w-5" />
+                    Ver Publicada
+                  </button>
                   <button
                     onClick={copyToClipboard}
-                    className="ml-2 rounded-md p-2 hover:bg-gray-100"
-                    title="Copiar URL"
+                    className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   >
-                    <HiOutlineClipboard className="h-5 w-5" />
+                    <HiOutlineClipboard className="mr-2 -ml-1 h-5 w-5" />
+                    Copiar URL
                   </button>
                 </div>
-                <div className="flex justify-between">
-                  <button
-                    onClick={() => window.open(publicUrl, '_blank')}
-                    className="flex items-center space-x-2 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-                  >
-                    <HiOutlineEye className="h-5 w-5" />
-                    <span>Ver página</span>
-                  </button>
-                  <button
-                    onClick={handleUnpublish}
-                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-                  >
-                    Despublicar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {error && (
-                  <p className="text-sm text-red-600">{error}</p>
-                )}
-                <div className="flex justify-end space-x-3">
-                  <button
-                    onClick={onClose}
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handlePublish}
-                    disabled={isPublishing}
-                    className="flex items-center space-x-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {isPublishing ? (
-                      <>
-                        <svg
-                          className="h-4 w-4 animate-spin"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                          />
-                        </svg>
-                        <span>Publicando...</span>
-                      </>
-                    ) : (
-                      <>
-                        <HiOutlineGlobeAlt className="h-5 w-5" />
-                        <span>Publicar</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
+              ) : (
+                <button
+                  onClick={handlePublish}
+                  disabled={isPublishing}
+                  className={`inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                    isPublishing ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <HiOutlineGlobeAlt className="mr-2 -ml-1 h-5 w-5" />
+                  {isPublishing ? 'Publicando...' : 'Publicar'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

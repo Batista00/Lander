@@ -21,7 +21,7 @@ interface ModernProjectsProps {
   isEditing?: boolean;
 }
 
-export const ModernProjects: React.FC<ModernProjectsProps> = ({ data, onEdit, isEditing }) => {
+const ModernProjects: React.FC<ModernProjectsProps> = ({ data, onEdit, isEditing }) => {
   const [activeCategory, setActiveCategory] = useState('all');
   const { ref, inView } = useInView({
     triggerOnce: true,

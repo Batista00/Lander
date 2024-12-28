@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Card, CardContent, Button, Skeleton } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, Button, Skeleton, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { landingPageService } from '../../services/landingPageService';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
+import { PLANS } from '../../data/plans';
+import { PlanType } from '../../types/plans';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { Trash2, Edit, Eye } from 'lucide-react';
 
 interface LandingPage {
   id: string;
@@ -13,13 +17,30 @@ interface LandingPage {
   conversions?: number;
   createdAt: Date;
   updatedAt: Date;
+  publishConfig?: {
+    slug: string;
+  };
 }
+
+// Simulación temporal del plan del usuario
+const useUserPlan = () => {
+  // TODO: Implementar esto con un contexto real
+  return {
+    planId: 'free' as PlanType,
+    activeLandingPages: 1,
+    trialEndsAt: null,
+    maxLandingPages: PLANS.free.maxLandingPages
+  };
+};
 
 const LandingPages = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [pages, setPages] = useState<LandingPage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [pageToDelete, setPageToDelete] = useState<LandingPage | null>(null);
+  const userPlan = useUserPlan();
 
   useEffect(() => {
     if (user) {
@@ -34,7 +55,7 @@ const LandingPages = () => {
         return;
       }
 
-      const pagesData = await landingPageService.getAllLandingPages();
+      const pagesData = await landingPageService.getLandingPages();
       setPages(pagesData);
     } catch (error) {
       console.error('Error loading pages:', error);
@@ -49,7 +70,53 @@ const LandingPages = () => {
   };
 
   const handleNewPage = () => {
+    if (pages.length >= userPlan.maxLandingPages) {
+      toast.error(
+        <div>
+          <p>Has alcanzado el límite de landing pages de tu plan.</p>
+          <Button 
+            color="primary" 
+            variant="contained" 
+            size="small"
+            onClick={() => navigate('/pricing')}
+            sx={{ mt: 1 }}
+          >
+            Actualizar Plan
+          </Button>
+        </div>
+      );
+      return;
+    }
     navigate('/dashboard/landing-pages/templates');
+  };
+
+  const handleDelete = (page: LandingPage) => {
+    setPageToDelete(page);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!pageToDelete) return;
+
+    try {
+      await landingPageService.deleteLandingPage(pageToDelete.id);
+      setPages(prev => prev.filter(p => p.id !== pageToDelete.id));
+      toast.success("Landing page eliminada correctamente", {
+        description: `Se ha eliminado "${pageToDelete.title}"`,
+        action: {
+          label: "Deshacer",
+          onClick: () => loadPages()
+        },
+      });
+    } catch (error) {
+      console.error('Error deleting landing:', error);
+      toast.error("No se pudo eliminar la landing page", {
+        description: "Hubo un error al intentar eliminar la página. Por favor, intenta de nuevo.",
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setPageToDelete(null);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -80,17 +147,54 @@ const LandingPages = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h4">
-          Landing Pages
-        </Typography>
-        <Button 
-          variant="contained" 
-          color="primary"
-          onClick={handleNewPage}
-        >
-          Nueva Landing Page
-        </Button>
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h4">
+            Landing Pages
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="primary"
+            onClick={handleNewPage}
+          >
+            Nueva Landing Page
+          </Button>
+        </Box>
+        
+        {/* Plan Info */}
+        <Box sx={{ 
+          p: 2, 
+          bgcolor: 'background.paper',
+          borderRadius: 1,
+          border: 1,
+          borderColor: 'divider',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Box>
+            <Typography variant="subtitle1" sx={{ mb: 0.5 }}>
+              Plan {PLANS[userPlan.planId].name}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {pages.length} de {userPlan.maxLandingPages} landing pages utilizadas
+            </Typography>
+          </Box>
+          {userPlan.planId === 'free' && (
+            <Button 
+              variant="contained"
+              sx={{
+                bgcolor: 'rgb(0, 200, 83)',
+                '&:hover': {
+                  bgcolor: 'rgb(0, 180, 75)'
+                }
+              }}
+              onClick={() => navigate('/pricing')}
+            >
+              Actualizar Plan
+            </Button>
+          )}
+        </Box>
       </Box>
 
       <Grid container spacing={3}>
@@ -113,51 +217,81 @@ const LandingPages = () => {
         ) : (
           pages.map((page) => (
             <Grid item xs={12} sm={6} md={4} key={page.id}>
-              <Card sx={{ 
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-4px)'
-                }
-              }}>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h6" component="div">
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" noWrap title={page.title}>
                     {page.title}
                   </Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ color: getStatusColor(page.status), mb: 1 }}>
-                      Estado: {getStatusText(page.status)}
-                    </Typography>
-                    {page.views !== undefined && (
-                      <Typography variant="body2" color="text.secondary">
-                        Vistas: {page.views.toLocaleString()}
-                      </Typography>
-                    )}
-                    {page.conversions !== undefined && (
-                      <Typography variant="body2" color="text.secondary">
-                        Conversiones: {page.conversions.toLocaleString()}
-                      </Typography>
-                    )}
+                  
+                  <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        bgcolor: getStatusColor(page.status),
+                        mr: 1
+                      }}
+                    />
                     <Typography variant="body2" color="text.secondary">
-                      Actualizado: {page.updatedAt?.toLocaleDateString()}
+                      {getStatusText(page.status)}
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button 
-                      variant="contained" 
-                      color="primary"
-                      onClick={() => navigate(`/dashboard/landing-pages/${page.id}`)}
-                    >
-                      Editar
-                    </Button>
-                    <Button 
-                      variant="outlined"
-                      onClick={() => navigate(`/dashboard/landing-pages/preview/${page.id}`)}
-                    >
-                      Vista Previa
-                    </Button>
+
+                  {page.views !== undefined && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      {page.views} visualizaciones
+                    </Typography>
+                  )}
+
+                  <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                    <Tooltip title="Editar">
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => navigate(`/dashboard/landing-pages/editor/${page.id}`)}
+                        startIcon={<Edit className="h-4 w-4" />}
+                      >
+                        Editar
+                      </Button>
+                    </Tooltip>
+
+                    <Tooltip title="Vista previa">
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => navigate(`/dashboard/landing-pages/preview/${page.id}`)}
+                        startIcon={<Eye className="h-4 w-4" />}
+                      >
+                        Vista previa
+                      </Button>
+                    </Tooltip>
+
+                    {page.status === 'published' && (
+                      <Tooltip title="Ver publicada">
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="success"
+                          onClick={() => window.open(`/dashboard/landing-pages/published/${page.publishConfig?.slug || page.id}`, '_blank')}
+                          startIcon={<Eye className="h-4 w-4" />}
+                        >
+                          Ver publicada
+                        </Button>
+                      </Tooltip>
+                    )}
+
+                    <Tooltip title="Eliminar">
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleDelete(page)}
+                        startIcon={<Trash2 className="h-4 w-4" />}
+                      >
+                        Eliminar
+                      </Button>
+                    </Tooltip>
                   </Box>
                 </CardContent>
               </Card>
@@ -165,6 +299,25 @@ const LandingPages = () => {
           ))
         )}
       </Grid>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar Landing Page</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que quieres eliminar esta landing page? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outlined" onClick={() => setDeleteDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="contained" color="error" onClick={confirmDelete}>
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {!loading && pages.length === 0 && (
         <Box sx={{ 

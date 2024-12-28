@@ -20,6 +20,7 @@ import { MarketplaceSettings } from '../pages/marketplace/MarketplaceSettings';
 import { LandingPagesList } from '../pages/landing/LandingPagesList';
 import { PageBuilder } from '../pages/landing/PageBuilder';
 import { PagePreview } from '../pages/landing/PagePreview';
+import { PublishedLanding } from '../pages/landing/PublishedLanding';
 
 // Design Pages
 import DesignThemes from '../pages/design/Themes';
@@ -95,16 +96,16 @@ export const routes: RouteObject[] = [
             element: <LandingPagesList />
           },
           {
-            path: 'new',
-            element: <PageBuilder />
-          },
-          {
-            path: 'edit/:id',
+            path: 'editor/:id',
             element: <PageBuilder />
           },
           {
             path: 'preview/:id',
             element: <PagePreview />
+          },
+          {
+            path: 'published/:slug',
+            element: <PublishedLanding />
           }
         ]
       },

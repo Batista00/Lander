@@ -1,115 +1,52 @@
+import React from 'react';
+import { Component, ComponentType } from '@/types/landing';
 import { cn } from '@/lib/utils';
 
 interface ImageProps {
-  id: string;
-  content: {
-    src: string;
-    alt?: string;
-    caption?: string;
-    aspectRatio?: 'auto' | 'square' | 'video' | 'portrait' | 'wide';
-    fit?: 'contain' | 'cover';
-    rounded?: boolean;
-    shadow?: 'none' | 'small' | 'medium' | 'large';
-    border?: boolean;
-    borderColor?: string;
-    width?: 'small' | 'medium' | 'large' | 'full';
-    alignment?: 'left' | 'center' | 'right';
-    animation?: 'none' | 'fade' | 'zoom' | 'slide';
-  };
-  onEdit?: () => void;
+  component: Component & { type: ComponentType.Image };
+  mode?: 'preview' | 'published' | 'edit';
 }
 
-export function Image({ id, content, onEdit }: ImageProps) {
+export const Image: React.FC<ImageProps> = ({
+  component,
+  mode = 'preview'
+}) => {
   const {
-    src,
+    src = '',
     alt = '',
     caption,
-    aspectRatio = 'auto',
-    fit = 'cover',
-    rounded = false,
-    shadow = 'none',
-    border = false,
-    borderColor = 'border-gray-200',
-    width = 'full',
-    alignment = 'center',
-    animation = 'none'
-  } = content;
-
-  const aspectRatioClasses = {
-    auto: '',
-    square: 'aspect-square',
-    video: 'aspect-video',
-    portrait: 'aspect-[3/4]',
-    wide: 'aspect-[16/9]'
-  };
-
-  const shadowClasses = {
-    none: '',
-    small: 'shadow-sm',
-    medium: 'shadow-md',
-    large: 'shadow-lg'
-  };
-
-  const widthClasses = {
-    small: 'max-w-sm',
-    medium: 'max-w-2xl',
-    large: 'max-w-4xl',
-    full: 'w-full'
-  };
-
-  const alignmentClasses = {
-    left: 'mr-auto',
-    center: 'mx-auto',
-    right: 'ml-auto'
-  };
-
-  const animationClasses = {
-    none: '',
-    fade: 'animate-fade-in',
-    zoom: 'animate-zoom-in',
-    slide: 'animate-slide-in'
-  };
+  } = component.content;
 
   return (
-    <div className={cn(
-      "relative group",
-      widthClasses[width],
-      alignmentClasses[alignment]
-    )}>
-      <div className={cn(
-        "relative overflow-hidden",
-        aspectRatioClasses[aspectRatio],
-        shadowClasses[shadow],
-        {
-          'rounded-lg': rounded,
-          'border': border,
-          [borderColor]: border
-        }
-      )}>
+    <div
+      className={cn(
+        "relative group",
+        component.styles?.spacing,
+      )}
+    >
+      <div
+        className={cn(
+          "relative overflow-hidden",
+          component.styles?.typography?.textAlign && `text-${component.styles.typography.textAlign}`,
+        )}
+      >
         <img
           src={src}
           alt={alt}
           className={cn(
             "w-full h-full transition-transform duration-300",
-            {
-              'object-contain': fit === 'contain',
-              'object-cover': fit === 'cover',
-              'hover:scale-105': animation === 'zoom'
-            },
-            animationClasses[animation]
+            component.styles?.colors?.background && `bg-${component.styles.colors.background}`,
           )}
         />
       </div>
-
       {caption && (
-        <p className="mt-2 text-sm text-gray-600 text-center">
+        <figcaption className="mt-2 text-sm text-gray-600 text-center">
           {caption}
-        </p>
+        </figcaption>
       )}
-
-      {onEdit && (
+      {mode === 'edit' && (
         <button
-          onClick={onEdit}
+          onClick={() => {}}
           className="absolute hidden group-hover:flex items-center justify-center top-2 right-2 w-8 h-8 bg-blue-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         >
           <svg
@@ -117,6 +54,7 @@ export function Image({ id, content, onEdit }: ImageProps) {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
           >
             <path
               strokeLinecap="round"
@@ -129,4 +67,4 @@ export function Image({ id, content, onEdit }: ImageProps) {
       )}
     </div>
   );
-}
+};

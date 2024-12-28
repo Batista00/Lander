@@ -20,7 +20,7 @@ export interface Landing {
   updatedAt: number;
   userId: string;
   customDomain?: string;
-  status?: 'draft' | 'published';
+  status: 'draft' | 'published' | 'archived';
 }
 
 export interface LandingStore {
@@ -56,7 +56,7 @@ export const useLandingStore = create<LandingStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       console.log('Cargando landing pages...');
-      const landings = await landingPageService.getAllLandingPages();
+      const landings = await landingPageService.getLandingPages();
       console.log('Landing pages cargadas:', landings);
       set({ landings, isLoading: false });
     } catch (error) {
@@ -229,6 +229,5 @@ export const useLandingStore = create<LandingStore>((set, get) => ({
   },
 
   setPreviewMode: (isPreview) => set({ isPreviewMode: isPreview }),
-
-  clearStore: () => set({ landings: [], currentLanding: null, isPreviewMode: false, error: null }),
+  clearStore: () => set({ landings: [], currentLanding: null, isPreviewMode: false, error: null })
 }));

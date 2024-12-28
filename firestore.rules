@@ -1,25 +1,136 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Función para verificar si el usuario está autenticado
+    // Funciones de utilidad
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    // Función para verificar si el usuario es dueño del documento
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    // Reglas para la colección users
-    match /users/{userId} {
-      // Cualquiera puede leer perfiles públicos
-      allow read: if true;
-      // Solo el propio usuario puede escribir su perfil
-      allow write: if isAuthenticated() && isOwner(userId);
+    function isPublished(status) {
+      return status == 'published';
     }
 
-    // Reglas para developers
+    function isValidLandingPage() {
+      let data = request.resource.data;
+      return 
+        data.keys().hasAll(['userId', 'status', 'components']) &&
+        data.userId is string &&
+        data.status in ['draft', 'published'] &&
+        data.components is list;
+    }
+
+    function isValidLead() {
+      let data = request.resource.data;
+      return 
+        data.keys().hasAll(['landingPageId', 'formData', 'metadata']) &&
+        data.formData is map &&
+        data.metadata.createdAt is timestamp &&
+        (!('status' in data) || data.status in ['new', 'contacted', 'qualified', 'converted', 'archived']);
+    }
+
+    function isWithinPlanLimits(userId) {
+      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+      let plan = userDoc.data.plan;
+      let monthStart = timestamp.date(string(request.time.toDate().year()) + "-" + string(request.time.toDate().month() + 1) + "-01");
+      let leadsThisMonth = getAfter(/databases/$(database)/documents/leads, 
+        where userId == userId && 
+        metadata.createdAt >= monthStart
+      ).size();
+      
+      return plan == 'premium' || leadsThisMonth < 100;
+    }
+
+    function isValidCampaign() {
+      let data = request.resource.data;
+      return 
+        data.keys().hasAll(['name', 'description', 'segmentId', 'emailTemplate', 'status']) &&
+        data.name is string &&
+        data.description is string &&
+        data.segmentId is string &&
+        data.emailTemplate.subject is string &&
+        data.emailTemplate.body is string &&
+        data.status in ['draft', 'scheduled', 'sending', 'completed', 'error'];
+    }
+
+    function isService() {
+      return request.auth != null && request.auth.token.email == 'service@lander.com';
+    }
+
+    function hasAccess(userId) {
+      return isAuthenticated() && (isOwner(userId) || isService());
+    }
+
+    // Funciones de administración
+    function isAdmin() {
+      return get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role != null;
+    }
+
+    function isSuperAdmin() {
+      return get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'super_admin';
+    }
+
+    function hasPermission(permission) {
+      let adminDoc = get(/databases/$(database)/documents/admins/$(request.auth.uid));
+      let [category, action] = permission.split('.');
+      return adminDoc.data.permissions[category][action] == true;
+    }
+
+    // Colección de administradores
+    match /admins/{adminId} {
+      allow read: if isAuthenticated() && (isOwner(adminId) || isSuperAdmin());
+      allow write: if isAuthenticated() && isSuperAdmin();
+    }
+
+    // Colección de usuarios con acceso prioritario para admins
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow write: if isAuthenticated() && (isOwner(userId) || hasPermission('users.manage'));
+    }
+
+    // Colección de organizaciones
+    match /organizations/{orgId} {
+      allow read: if isAuthenticated() && (resource.data.members[request.auth.uid] != null || isAdmin());
+      allow write: if isAuthenticated() && (
+        resource.data.adminIds[request.auth.uid] != null || 
+        hasPermission('organizations.manage')
+      );
+    }
+
+    // Colección de agentes IA
+    match /ai-agents/{agentId} {
+      allow read: if isAuthenticated() && (
+        resource.data.organizationId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.organizationId ||
+        hasPermission('ai.manage')
+      );
+      allow write: if isAuthenticated() && hasPermission('ai.manage');
+    }
+
+    // Colección de uso de IA
+    match /ai-usage/{usageId} {
+      allow read: if isAuthenticated() && (
+        isOwner(usageId) || 
+        hasPermission('ai.monitor')
+      );
+      allow write: if isAuthenticated() && hasPermission('ai.manage');
+    }
+
+    // Configuraciones globales
+    match /admin-settings/{settingId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow write: if isAuthenticated() && hasPermission('system.configure');
+    }
+
+    // Analytics y monitoreo
+    match /analytics/{docId} {
+      allow read: if isAuthenticated() && hasPermission('system.monitor');
+      allow write: if isAuthenticated() && hasPermission('system.manage');
+    }
+
+    // Reglas para la colección developers
     match /developers/{developerId} {
       // Cualquiera puede leer perfiles de desarrolladores
       allow read: if true;
@@ -46,10 +157,11 @@ service cloud.firestore {
       // Cualquiera puede leer templates publicados
       allow read: if true;
       // Solo usuarios autenticados pueden crear
-      allow create: if isAuthenticated();
-      // Solo el vendedor puede actualizar o eliminar
+      allow create: if isAuthenticated() && 
+        isOwner(request.resource.data.userId);
+      // Solo el dueño puede actualizar o eliminar
       allow update, delete: if isAuthenticated() && 
-                           isOwner(resource.data.sellerId);
+        isOwner(resource.data.userId);
     }
 
     // Reglas para la colección orders
@@ -88,19 +200,85 @@ service cloud.firestore {
 
     // Reglas para la colección landing_pages
     match /landing_pages/{landingId} {
-      // Permitir lectura si el usuario está autenticado
-      allow read: if isAuthenticated();
-      // Permitir creación si el usuario está autenticado
-      allow create: if isAuthenticated();
-      // Permitir actualización si el usuario está autenticado y es dueño
-      allow update: if isAuthenticated() && isOwner(resource.data.userId);
-      // Permitir eliminación si el usuario está autenticado y es dueño
-      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+      // Permitir lectura si:
+      // 1. El usuario está autenticado y es dueño
+      // 2. La landing está publicada
+      allow read: if isAuthenticated() && (
+        isOwner(resource.data.userId) || 
+        resource.data.status == 'published'
+      );
+      
+      // Permitir crear si el usuario está autenticado
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Permitir actualizar/eliminar si el usuario es dueño
+      allow update, delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+
+    // Reglas para la colección landing-pages
+    match /landing-pages/{pageId} {
+      // Permitir listar todas las landing pages del usuario autenticado
+      allow list: if isAuthenticated();
+
+      // Permitir leer landing pages si:
+      // 1. El usuario es el dueño, o
+      // 2. La página está publicada
+      allow get: if isAuthenticated() && (
+        isOwner(resource.data.userId) || 
+        isPublished(resource.data.status)
+      );
+
+      // Solo usuarios autenticados pueden crear nuevas landing pages
+      allow create: if isAuthenticated() && 
+        isOwner(request.resource.data.userId) &&
+        isValidLandingPage();
+
+      // Solo el dueño puede actualizar si:
+      // 1. No se está cambiando el userId
+      // 2. Los datos son válidos
+      allow update: if isAuthenticated() && 
+        isOwner(resource.data.userId) &&
+        request.resource.data.userId == resource.data.userId &&
+        isValidLandingPage();
+
+      // Solo el dueño puede eliminar
+      allow delete: if isAuthenticated() && 
+        isOwner(resource.data.userId);
+
+      // Reglas para la subcolección de versiones
+      match /versions/{versionId} {
+        allow read: if isAuthenticated() && isOwner(get(/databases/$(database)/documents/landing-pages/$(pageId)).data.userId);
+        allow write: if isAuthenticated() && isOwner(get(/databases/$(database)/documents/landing-pages/$(pageId)).data.userId);
+      }
+    }
+
+    // Reglas para la colección domains
+    match /domains/{domain} {
+      // Solo usuarios autenticados pueden leer sus propios dominios
+      allow read: if isAuthenticated() && isOwner(resource.data.userId);
+      // Solo usuarios autenticados pueden crear nuevos dominios
+      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
+      // Solo el dueño puede actualizar o eliminar
+      allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
     }
 
     // Reglas para analytics
     match /analytics/{docId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // Reglas para user_ratings
+    match /user_ratings/{ratingId} {
+      // Cualquiera puede leer las calificaciones
+      allow read: if true;
+      // Solo usuarios autenticados que hayan interactuado pueden crear calificaciones
+      allow create: if isAuthenticated();
+      // Solo el autor puede actualizar o eliminar
+      allow update, delete: if isAuthenticated() && 
+        isOwner(resource.data.userId);
     }
 
     // Reglas para user_profiles
@@ -109,19 +287,6 @@ service cloud.firestore {
       allow read: if true;
       // Solo el propio usuario puede actualizar su perfil
       allow write: if isAuthenticated() && isOwner(userId);
-    }
-
-    // Reglas para user_ratings
-    match /user_ratings/{ratingId} {
-      // Cualquiera puede leer las calificaciones
-      allow read: if true;
-      // Solo usuarios autenticados que hayan interactuado pueden crear calificaciones
-      allow create: if isAuthenticated() && 
-                   (exists(/databases/$(database)/documents/orders/{orderId}) &&
-                    get(/databases/$(database)/documents/orders/{orderId}).data.buyerId == request.auth.uid ||
-                    get(/databases/$(database)/documents/orders/{orderId}).data.sellerId == request.auth.uid);
-      // Solo el autor puede actualizar o eliminar su calificación
-      allow update, delete: if isAuthenticated() && isOwner(resource.data.ratedBy);
     }
 
     // Reglas para promotions
@@ -142,6 +307,85 @@ service cloud.firestore {
       allow read: if true;
       // Solo usuarios autenticados pueden actualizar las configuraciones
       allow write: if isAuthenticated();
+    }
+
+    // Reglas para template_categories
+    match /template_categories/{categoryId} {
+      // Cualquiera puede leer categorías
+      allow read: if true;
+      // Solo administradores pueden modificar
+      allow write: if false;
+    }
+
+    // Reglas para la colección campaigns
+    match /campaigns/{campaignId} {
+      // Permitir lectura si el usuario está autenticado y es el dueño o es el servicio
+      allow read: if isAuthenticated() && 
+                 (isOwner(request.auth.uid) || isService());
+      
+      // Permitir creación si el usuario está autenticado y es el dueño
+      allow create: if isAuthenticated() &&
+                   request.resource.data.userId == request.auth.uid;
+      
+      // Solo el dueño o el servicio pueden actualizar
+      allow update: if isAuthenticated() && 
+                   (isOwner(resource.data.userId) || isService());
+      
+      // Solo el dueño puede eliminar
+      allow delete: if isAuthenticated() && 
+                   isOwner(resource.data.userId);
+    }
+
+    // Reglas para la colección segments
+    match /segments/{segmentId} {
+      // Solo el dueño puede leer sus segmentos
+      allow read: if isAuthenticated() && 
+                 isOwner(resource.data.userId);
+      
+      // Permitir creación si el usuario está autenticado
+      allow create: if isAuthenticated() &&
+                   request.resource.data.userId == request.auth.uid;
+      
+      // Solo el dueño puede actualizar o eliminar
+      allow update, delete: if isAuthenticated() && 
+                          isOwner(resource.data.userId);
+    }
+
+    // Reglas para la colección email_sends
+    match /email_sends/{emailId} {
+      // Solo el dueño de la campaña o el servicio pueden leer los envíos
+      allow read: if isAuthenticated() && 
+                 (isOwner(get(/databases/$(database)/documents/campaigns/$(resource.data.campaignId)).data.userId) ||
+                  request.auth.token.email == 'service@lander.com');
+      
+      // Permitir creación si el usuario está autenticado y es dueño de la campaña o es el servicio
+      allow create: if isAuthenticated() &&
+                   (isOwner(get(/databases/$(database)/documents/campaigns/$(request.resource.data.campaignId)).data.userId) ||
+                    request.auth.token.email == 'service@lander.com');
+      
+      // Solo el dueño de la campaña o el servicio pueden actualizar
+      allow update: if isAuthenticated() && 
+                   (isOwner(get(/databases/$(database)/documents/campaigns/$(resource.data.campaignId)).data.userId) ||
+                    request.auth.token.email == 'service@lander.com');
+    }
+
+    // Reglas para la colección leads
+    match /leads/{leadId} {
+      // Permitir lectura si el usuario está autenticado y es el dueño del lead o es el servicio
+      allow read: if isAuthenticated() && 
+                 (isOwner(request.auth.uid) || isService());
+      
+      // Permitir creación si el usuario está autenticado y es el dueño
+      allow create: if isAuthenticated() &&
+                   request.resource.data.userId == request.auth.uid;
+      
+      // Solo el dueño o el servicio pueden actualizar
+      allow update: if isAuthenticated() && 
+                   (isOwner(resource.data.userId) || isService());
+      
+      // Solo el dueño puede eliminar
+      allow delete: if isAuthenticated() && 
+                   isOwner(resource.data.userId);
     }
   }
 }

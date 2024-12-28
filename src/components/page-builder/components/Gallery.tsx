@@ -1,192 +1,214 @@
+import React, { useState } from 'react';
+import { Component } from '@/types/landing';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
-
-interface GalleryImage {
-  id: string;
-  src: string;
-  alt?: string;
-  title?: string;
-  description?: string;
-}
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface GalleryProps {
-  id: string;
-  content: {
-    images: GalleryImage[];
-    layout?: 'grid' | 'masonry' | 'carousel';
-    columns?: 2 | 3 | 4;
-    gap?: 'small' | 'medium' | 'large';
-    aspectRatio?: 'square' | 'auto';
-    lightbox?: boolean;
-    rounded?: boolean;
-    shadow?: 'none' | 'small' | 'medium' | 'large';
-    hover?: 'none' | 'zoom' | 'overlay';
-    showCaptions?: boolean;
-  };
-  onEdit?: () => void;
-  premium?: boolean;
+  component: Component;
+  mode?: 'preview' | 'published' | 'edit';
+  onChange?: (component: Component) => void;
 }
 
-export function Gallery({ id, content, onEdit, premium = true }: GalleryProps) {
-  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
-
-  if (!premium) {
-    return (
-      <div className="relative p-8 text-center bg-gradient-to-r from-purple-100 to-purple-50 rounded-lg border-2 border-dashed border-purple-200">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-purple-500 bg-white px-4 py-2 rounded-full shadow-sm">
-            Componente Premium 🌟
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+export const Gallery: React.FC<GalleryProps> = ({
+  component,
+  mode = 'preview',
+  onChange,
+}) => {
   const {
+    title = 'Nuestra Galería',
+    subtitle = 'Explora nuestro trabajo',
+    description = 'Una muestra visual de nuestros mejores proyectos',
     images = [],
     layout = 'grid',
     columns = 3,
-    gap = 'medium',
+    gap = 4,
     aspectRatio = 'square',
-    lightbox = true,
-    rounded = false,
-    shadow = 'none',
-    hover = 'overlay',
-    showCaptions = false
-  } = content;
+    showLightbox = true
+  } = component.content;
 
-  const columnClasses = {
-    2: 'grid-cols-1 sm:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
+  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const isEditing = mode === 'edit';
+
+  const handleChange = (field: string, value: string) => {
+    if (!onChange) return;
+    
+    onChange({
+      ...component,
+      content: {
+        ...component.content,
+        [field]: value
+      }
+    });
   };
 
-  const gapClasses = {
-    small: 'gap-2',
-    medium: 'gap-4',
-    large: 'gap-6'
+  const handleImageChange = (index: number, field: string, value: string) => {
+    if (!onChange || !images) return;
+
+    const updatedImages = [...images];
+    updatedImages[index] = {
+      ...updatedImages[index],
+      [field]: value
+    };
+
+    onChange({
+      ...component,
+      content: {
+        ...component.content,
+        images: updatedImages
+      }
+    });
   };
 
-  const shadowClasses = {
-    none: '',
-    small: 'shadow-sm',
-    medium: 'shadow-md',
-    large: 'shadow-lg'
+  const nextImage = () => {
+    if (selectedImage === null || !images) return;
+    setSelectedImage((selectedImage + 1) % images.length);
   };
 
-  const renderImage = (image: GalleryImage) => (
-    <div
-      key={image.id}
-      className={cn(
-        "group relative overflow-hidden",
-        {
-          'aspect-square': aspectRatio === 'square',
-          'rounded-lg': rounded
-        },
-        shadowClasses[shadow]
-      )}
-      onClick={() => lightbox && setSelectedImage(image)}
-    >
-      <img
-        src={image.src}
-        alt={image.alt || ''}
-        className={cn(
-          "w-full h-full object-cover transition-transform duration-300",
-          {
-            'group-hover:scale-110': hover === 'zoom'
-          }
-        )}
-      />
-      
-      {hover === 'overlay' && (
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          {(image.title || image.description) && (
-            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-              {image.title && (
-                <h4 className="text-lg font-semibold">{image.title}</h4>
-              )}
-              {image.description && (
-                <p className="text-sm opacity-90">{image.description}</p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+  const previousImage = () => {
+    if (selectedImage === null || !images) return;
+    setSelectedImage((selectedImage - 1 + images.length) % images.length);
+  };
 
-      {showCaptions && (image.title || image.description) && (
-        <div className="mt-2">
-          {image.title && (
-            <h4 className="text-sm font-semibold">{image.title}</h4>
-          )}
-          {image.description && (
-            <p className="text-xs text-gray-600">{image.description}</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
-  const renderLightbox = () => {
-    if (!selectedImage) return null;
-
-    return (
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
-        onClick={() => setSelectedImage(null)}
-      >
-        <div className="relative max-w-4xl mx-auto p-4">
-          <img
-            src={selectedImage.src}
-            alt={selectedImage.alt || ''}
-            className="max-h-[80vh] w-auto"
-          />
-          {(selectedImage.title || selectedImage.description) && (
-            <div className="absolute bottom-4 left-4 right-4 text-white text-center">
-              {selectedImage.title && (
-                <h4 className="text-xl font-semibold">{selectedImage.title}</h4>
-              )}
-              {selectedImage.description && (
-                <p className="mt-2 text-sm opacity-90">{selectedImage.description}</p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    );
+  const getAspectRatioClass = () => {
+    switch (aspectRatio) {
+      case 'square':
+        return 'aspect-square';
+      case 'video':
+        return 'aspect-video';
+      case 'portrait':
+        return 'aspect-[3/4]';
+      case 'landscape':
+        return 'aspect-[4/3]';
+      default:
+        return 'aspect-square';
+    }
   };
 
   return (
-    <div className="relative group">
-      <div className={cn(
-        layout === 'grid' && 'grid',
-        layout === 'grid' && columnClasses[columns],
-        gapClasses[gap]
-      )}>
-        {images.map(renderImage)}
-      </div>
-
-      {lightbox && renderLightbox()}
-
-      {onEdit && (
-        <button
-          onClick={onEdit}
-          className="absolute hidden group-hover:flex items-center justify-center top-2 right-2 w-8 h-8 bg-blue-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+    <div className="relative group py-16">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          {isEditing ? (
+            <input
+              type="text"
+              value={subtitle}
+              onChange={(e) => handleChange('subtitle', e.target.value)}
+              className="text-lg font-semibold text-primary mb-2 bg-transparent border-none focus:ring-2 focus:ring-primary text-center w-full"
             />
-          </svg>
-        </button>
-      )}
+          ) : (
+            <h3 className="text-lg font-semibold text-primary mb-2">
+              {subtitle}
+            </h3>
+          )}
+
+          {isEditing ? (
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => handleChange('title', e.target.value)}
+              className="text-3xl font-bold mb-4 bg-transparent border-none focus:ring-2 focus:ring-primary text-center w-full"
+            />
+          ) : (
+            <h2 className="text-3xl font-bold mb-4">
+              {title}
+            </h2>
+          )}
+
+          {isEditing ? (
+            <textarea
+              value={description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              className="text-lg mb-8 bg-transparent border-none focus:ring-2 focus:ring-primary text-center w-full"
+              rows={2}
+            />
+          ) : (
+            <p className="text-lg mb-8 max-w-2xl mx-auto">
+              {description}
+            </p>
+          )}
+        </div>
+
+        <div className={cn(
+          'grid gap-4',
+          layout === 'grid' && columns === 3 && 'md:grid-cols-3',
+          layout === 'grid' && columns === 2 && 'md:grid-cols-2',
+          layout === 'grid' && columns === 4 && 'md:grid-cols-4',
+          layout === 'masonry' && 'columns-1 md:columns-2 lg:columns-3'
+        )}>
+          {images.map((image, index) => (
+            <div
+              key={index}
+              className={cn(
+                'relative group cursor-pointer overflow-hidden rounded-lg',
+                layout !== 'masonry' && getAspectRatioClass(),
+                layout === 'masonry' && 'mb-4 break-inside-avoid'
+              )}
+              onClick={() => showLightbox && setSelectedImage(index)}
+            >
+              <img
+                src={image.url}
+                alt={image.caption || `Image ${index + 1}`}
+                className={cn(
+                  'w-full h-full object-cover transition-transform duration-300 group-hover:scale-110',
+                  layout !== 'masonry' && 'absolute inset-0'
+                )}
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-white text-center p-4">
+                    {image.caption && (
+                      <p className="text-lg font-semibold mb-2">{image.caption}</p>
+                    )}
+                    {image.description && (
+                      <p className="text-sm">{image.description}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Lightbox */}
+        {selectedImage !== null && showLightbox && (
+          <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <button
+              onClick={previousImage}
+              className="absolute left-4 text-white hover:text-gray-300"
+            >
+              <ChevronLeft className="w-8 h-8" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-4 text-white hover:text-gray-300"
+            >
+              <ChevronRight className="w-8 h-8" />
+            </button>
+            <div className="max-w-4xl max-h-[80vh] relative">
+              <img
+                src={images[selectedImage].url}
+                alt={images[selectedImage].caption || `Image ${selectedImage + 1}`}
+                className="max-w-full max-h-[80vh] object-contain"
+              />
+              {images[selectedImage].caption && (
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-4">
+                  <p className="text-lg font-semibold">{images[selectedImage].caption}</p>
+                  {images[selectedImage].description && (
+                    <p className="text-sm mt-1">{images[selectedImage].description}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};

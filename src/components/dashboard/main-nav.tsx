@@ -9,7 +9,10 @@ import {
   Store,
   ShoppingCart,
   Settings,
-  Package
+  Package,
+  Users,
+  Megaphone,
+  PieChart
 } from "lucide-react";
 
 const mainNavItems = [
@@ -17,6 +20,28 @@ const mainNavItems = [
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Leads",
+    href: "/dashboard/leads",
+    icon: Users,
+    children: [
+      {
+        title: "Todos los Leads",
+        href: "/dashboard/leads/all",
+        icon: Users,
+      },
+      {
+        title: "Segmentos",
+        href: "/dashboard/leads/segments",
+        icon: PieChart,
+      },
+      {
+        title: "Campañas",
+        href: "/dashboard/leads/campaigns",
+        icon: Megaphone,
+      }
+    ]
   },
   {
     title: "Marketplace",
@@ -58,7 +83,7 @@ export function MainNav() {
   return (
     <nav className="flex flex-col space-y-1">
       {mainNavItems.map((item) => {
-        const isActive = location.pathname === item.href;
+        const isActive = location.pathname.startsWith(item.href);
         
         return (
           <div key={item.href}>
@@ -82,7 +107,7 @@ export function MainNav() {
             {item.children && (
               <div className="ml-6 mt-1 space-y-1">
                 {item.children.map((child) => {
-                  const isChildActive = location.pathname === child.href;
+                  const isChildActive = location.pathname.startsWith(child.href);
                   
                   return (
                     <Link

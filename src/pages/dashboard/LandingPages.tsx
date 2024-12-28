@@ -13,6 +13,7 @@ import {
   Filter,
   SortAsc,
   Trash2,
+  Eye,
 } from 'lucide-react';
 import { PageBuilder } from '@/components/page-builder/PageBuilder';
 import { DeleteLandingModal } from '@/components/page-builder/DeleteLandingModal';
@@ -22,6 +23,8 @@ import { cn } from '@/lib/utils';
 import { useLandingStore } from '@/store/landingStore';
 import { useAuthStore } from '@/store/auth';
 import type { Landing } from '@/store/landingStore';
+import { landingPageService } from '@/services/landingPageService';
+import { toast } from '@/components/ui/toast';
 
 export function LandingPages() {
   const navigate = useNavigate();
@@ -47,15 +50,27 @@ export function LandingPages() {
     }
   }, [isAuthenticated, navigate]);
 
-  const handleDelete = (landing: Landing) => {
-    setLandingToDelete(landing);
-  };
-
-  const confirmDelete = (id: string) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta landing page?')) {
-      removeLanding(id);
+  const handleDelete = async (landing: Landing) => {
+    try {
+      await landingPageService.deleteLandingPage(landing.id);
+      removeLanding(landing.id);
+      toast({
+        title: "Landing eliminada",
+        description: "La landing page se ha eliminado correctamente"
+      });
+    } catch (error) {
+      console.error('Error deleting landing:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la landing page",
+        variant: "destructive"
+      });
     }
   };
+
+  const filteredLandings = landings.filter(landing => 
+    landing.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleCreateNew = () => {
     setShowNewLandingDialog(true);
@@ -67,33 +82,47 @@ export function LandingPages() {
       return;
     }
 
+    // Verificar el plan del usuario
+    if (user.subscription?.plan === 'free' && landings.length >= 1) {
+      toast({
+        title: "Límite alcanzado",
+        description: "Tu plan gratuito permite crear solo una landing page. Actualiza tu plan para crear más.",
+        variant: "destructive"
+      });
+      setShowNewLandingDialog(false);
+      return;
+    }
+
     if (newLandingName.trim()) {
       try {
         const newLanding = await addLanding(newLandingName.trim());
         setNewLandingName('');
         setShowNewLandingDialog(false);
         
-        // Asegurarnos de que tenemos un ID válido
         if (newLanding && newLanding.id) {
-          // Recargar la lista de landings
           await loadLandings();
-          // Navegar al editor
           navigate(`/dashboard/landing-pages/editor/${newLanding.id}`);
         } else {
           console.error('La landing page creada no tiene ID');
         }
       } catch (error) {
         console.error('Error al crear la landing page:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo crear la landing page",
+          variant: "destructive"
+        });
       }
     }
   };
 
-  const handleEdit = (id: string) => {
-    if (!id) {
-      console.error('ID de landing page inválido');
+  const handleEdit = (landing: Landing) => {
+    console.log('Editando landing:', landing);
+    if (!landing || !landing.id) {
+      console.error('Landing inválida o sin ID');
       return;
     }
-    navigate(`/dashboard/landing-pages/editor/${id}`);
+    navigate(`/dashboard/landing-pages/editor/${landing.id}`);
   };
 
   // Si hay una landing page actual y estamos en modo construcción, mostrar el editor
@@ -106,165 +135,73 @@ export function LandingPages() {
   }
 
   return (
-    <>
-      <div className="flex flex-col min-h-screen">
-        {/* Header */}
-        <div className="border-b bg-white">
-          <div className="flex h-16 items-center px-4">
-            <div className="flex-1">
-              <h1 className="text-2xl font-semibold">Landing Pages</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button
-                onClick={handleCreateNew}
-                size="sm"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Nueva Landing Page
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Toolbar */}
-        <div className="border-b bg-gray-50/40 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4 flex-1">
-              <div className="relative w-96">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                <Input
-                  placeholder="Buscar landing pages..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Button variant="outline" size="sm">
-                <Filter className="mr-2 h-4 w-4" />
-                Filtrar
-              </Button>
-              <Button variant="outline" size="sm">
-                <SortAsc className="mr-2 h-4 w-4" />
-                Ordenar
-              </Button>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
-                <GridIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 p-6">
-          {viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {landings.map((landing) => (
-                <Card key={landing.id} className="relative group">
-                  <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
-                    {landing.thumbnail ? (
-                      <img
-                        src={landing.thumbnail}
-                        alt={landing.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400">
-                        Sin vista previa
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold">{landing.name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {landing.publishedUrl ? 'Publicada' : 'Borrador'}
-                    </p>
-                    <div className="mt-4 flex items-center justify-between">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(landing.id)}
-                      >
-                        Editar
-                      </Button>
-                      {landing.publishedUrl && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => window.open(landing.publishedUrl, '_blank')}
-                        >
-                          Ver Publicada
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(landing)}
-                    className="absolute top-2 right-2 p-2 bg-white/90 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </button>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {landings.map((landing) => (
-                <div
-                  key={landing.id}
-                  className="flex items-center justify-between p-4 bg-white rounded-lg border"
-                >
-                  <div>
-                    <h3 className="font-semibold">{landing.name}</h3>
-                    <p className="text-sm text-gray-500">
-                      {landing.publishedUrl ? 'Publicada' : 'Borrador'}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(landing.id)}
-                    >
-                      Editar
-                    </Button>
-                    {landing.publishedUrl && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(landing.publishedUrl, '_blank')}
-                      >
-                        Ver Publicada
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(landing)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Mis Landing Pages</h1>
+        <div className="flex gap-4">
+          <Input
+            type="search"
+            placeholder="Buscar landing pages..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-[300px]"
+          />
+          <Button onClick={handleCreateNew}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Landing
+          </Button>
         </div>
       </div>
 
-      {/* Diálogo de nueva landing page */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {filteredLandings.map((landing) => (
+          <Card key={landing.id} className="flex flex-col bg-[#1E1E1E] border-gray-800">
+            <div className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">{landing.name}</h3>
+                  <p className="text-sm text-gray-400">
+                    Estado: {landing.status === 'published' ? 'Publicado' : landing.status === 'draft' ? 'Borrador' : 'Archivado'}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Actualizado: {new Date(landing.updatedAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 mt-auto border-t border-gray-800 flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDelete(landing)}
+                className="flex items-center gap-2 text-red-500 hover:text-red-600 hover:bg-red-950/20"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleEdit(landing)}
+                className="flex items-center gap-2 text-white hover:bg-gray-800"
+              >
+                <Settings className="h-4 w-4" />
+                Editar
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/dashboard/landing-pages/preview/${landing.id}`)}
+                className="flex items-center gap-2 text-white hover:bg-gray-800"
+              >
+                <Eye className="h-4 w-4" />
+                Vista Previa
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+
       <Dialog open={showNewLandingDialog} onOpenChange={setShowNewLandingDialog}>
         <DialogContent>
           <DialogHeader>
@@ -281,7 +218,7 @@ export function LandingPages() {
             <Button variant="outline" onClick={() => setShowNewLandingDialog(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleCreateLanding} disabled={!newLandingName.trim()}>
+            <Button onClick={handleCreateLanding}>
               Crear
             </Button>
           </DialogFooter>
@@ -294,12 +231,12 @@ export function LandingPages() {
         onClose={() => setLandingToDelete(null)}
         onConfirm={() => {
           if (landingToDelete) {
-            confirmDelete(landingToDelete.id);
+            handleDelete(landingToDelete);
             setLandingToDelete(null);
           }
         }}
         landingName={landingToDelete?.name || ''}
       />
-    </>
+    </div>
   );
 }
