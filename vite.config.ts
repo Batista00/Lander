@@ -10,8 +10,9 @@ export default defineConfig({
     }
   },
   define: {
-    'process.env': {},
-    global: {},
+    'process.env': process.env,
+    global: 'globalThis',
+    'global.TYPED_ARRAY_SUPPORT': true
   },
   optimizeDeps: {
     include: [
@@ -30,7 +31,11 @@ export default defineConfig({
     esbuildOptions: {
       target: 'es2020',
       define: {
-        global: 'globalThis'
+        global: 'globalThis',
+        'process.env.NODE_ENV': '"production"'
+      },
+      supported: {
+        'top-level-await': true
       }
     }
   },
@@ -43,7 +48,8 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           ui: ['@mui/material', '@mui/icons-material', '@mui/x-date-pickers'],
-          ai: ['@google/generative-ai']
+          ai: ['@google/generative-ai'],
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage']
         }
       }
     }
