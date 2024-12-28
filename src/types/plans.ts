@@ -1,28 +1,28 @@
-export type PlanId = 'free' | 'pro' | 'enterprise';
+export type PlanId = 'gratuito' | 'pro' | 'empresa';
 
-export type BillingPeriod = 'monthly' | 'yearly';
+export type PeriodoPago = 'mensual' | 'anual';
 
 export interface Plan {
   id: PlanId;
-  name: string;
-  description: string;
-  price: number;
-  features: string[];
-  billingPeriod: BillingPeriod;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  caracteristicas: string[];
+  periodoPago: PeriodoPago;
 }
 
-export interface UserPlan {
+export interface PlanUsuario {
   planId: PlanId;
-  billingPeriod: BillingPeriod;
-  startDate: string;
-  endDate: string;
-  status: 'active' | 'cancelled' | 'expired';
+  periodoPago: PeriodoPago;
+  fechaInicio: string;
+  fechaFin: string;
+  estado: 'activo' | 'cancelado' | 'expirado';
 }
 
-export interface UserPlanUpdate {
+export interface ActualizacionPlanUsuario {
   planId?: PlanId;
-  billingPeriod?: BillingPeriod;
-  startDate?: string;
-  endDate?: string;
-  status?: 'active' | 'cancelled' | 'expired';
+  periodoPago?: PeriodoPago;
+  fechaInicio?: string;
+  fechaFin?: string;
+  estado?: 'activo' | 'cancelado' | 'expirado';
 }

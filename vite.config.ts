@@ -21,7 +21,10 @@ export default defineConfig({
       'sonner',
       '@radix-ui/react-tooltip'
     ],
-    force: true
+    force: true,
+    esbuildOptions: {
+      target: 'es2020'
+    }
   },
   build: {
     outDir: 'dist',
@@ -29,31 +32,15 @@ export default defineConfig({
     chunkSizeWarningLimit: 1600,
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes('firebase')) {
-              return 'firebase';
-            }
-            if (id.includes('@mui')) {
-              return 'mui';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui';
-            }
-            if (id.includes('date-fns')) {
-              return 'date-fns';
-            }
-            return 'vendor';
-          }
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@mui/material', '@mui/icons-material', '@mui/x-date-pickers'],
         }
       }
     }
   },
   server: {
     port: 5173,
-    strictPort: true,
-    hmr: {
-      timeout: 5000
-    }
+    host: true
   }
 });

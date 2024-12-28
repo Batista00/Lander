@@ -2,72 +2,72 @@ import { Plan } from './plans';
 import { PaymentStatus } from './payment';
 import { PlanId, BillingPeriod } from './plans';
 
-export interface BillingDetails {
-  name: string;
-  taxId?: string;  // RUT/CUIT/NIT según el país
-  address?: {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    zipCode: string;
+export interface DetallesFacturacion {
+  nombre: string;
+  identificacionFiscal?: string;  // RUT/CUIT/NIT según el país
+  direccion?: {
+    calle: string;
+    ciudad: string;
+    estado: string;
+    pais: string;
+    codigoPostal: string;
   };
   email: string;
 }
 
-export interface PaymentMethod {
+export interface MetodoPago {
   id: string;
-  type: 'credit_card' | 'debit_card';
-  last4: string;
-  brand: string;
-  expiryMonth: number;
-  expiryYear: number;
-  isDefault: boolean;
+  tipo: 'tarjeta_credito' | 'tarjeta_debito';
+  ultimos4: string;
+  marca: string;
+  mesVencimiento: number;
+  anioVencimiento: number;
+  esPredeterminado: boolean;
 }
 
-export interface Invoice {
+export interface Factura {
   id: string;
-  number: string;
-  date: Date;
-  dueDate: Date;
-  amount: number;
-  status: PaymentStatus;
+  numero: string;
+  fecha: Date;
+  fechaVencimiento: Date;
+  monto: number;
+  estado: PaymentStatus;
   items: {
-    description: string;
-    quantity: number;
-    unitPrice: number;
+    descripcion: string;
+    cantidad: number;
+    precioUnitario: number;
     total: number;
   }[];
-  billingDetails: BillingDetails;
+  detallesFacturacion: DetallesFacturacion;
   downloadUrl?: string;
 }
 
-export interface BillingSettings {
-  autoRenew: boolean;
-  defaultPaymentMethod?: string;
-  billingDetails: BillingDetails;
-  notificationPreferences: {
-    paymentReminders: boolean;
-    receiveInvoices: boolean;
-    trialEndReminders: boolean;
+export interface ConfiguracionFacturacion {
+  renovacionAutomatica: boolean;
+  metodoPagoPredeterminado?: string;
+  detallesFacturacion: DetallesFacturacion;
+  preferenciasNotificacion: {
+    recordatoriosPago: boolean;
+    recibirFacturas: boolean;
+    recordatoriosFinPrueba: boolean;
   };
 }
 
-export interface BillingInfo {
+export interface InformacionFacturacion {
   planId: PlanId;
-  billingPeriod: BillingPeriod;
-  nextBillingDate: string;
-  lastPaymentStatus: PaymentStatus;
-  lastPaymentDate: string;
-  amount: number;
+  periodoPago: BillingPeriod;
+  proximaFechaFacturacion: string;
+  estadoUltimoPago: PaymentStatus;
+  fechaUltimoPago: string;
+  monto: number;
 }
 
-export interface BillingHistory {
-  payments: {
+export interface HistorialFacturacion {
+  pagos: {
     id: string;
-    date: string;
-    amount: number;
-    status: PaymentStatus;
-    description: string;
+    fecha: string;
+    monto: number;
+    estado: PaymentStatus;
+    descripcion: string;
   }[];
 }
