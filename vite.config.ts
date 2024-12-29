@@ -9,9 +9,35 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     }
   },
+  optimizeDeps: {
+    include: [
+      '@radix-ui/react-tooltip',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-label',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-alert-dialog',
+      '@radix-ui/react-toast'
+    ]
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,
-    chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      external: [],
+      output: {
+        manualChunks: {
+          'radix': [
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-label',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-alert-dialog',
+            '@radix-ui/react-toast'
+          ]
+        }
+      }
+    }
   }
 });
