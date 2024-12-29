@@ -9,33 +9,28 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     }
   },
-  optimizeDeps: {
-    include: [
-      '@radix-ui/react-tooltip',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
-      '@radix-ui/react-label',
-      '@radix-ui/react-avatar',
-      '@radix-ui/react-alert-dialog',
-      '@radix-ui/react-toast'
-    ]
-  },
   build: {
     outDir: 'dist',
     sourcemap: true,
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    },
     rollupOptions: {
-      external: [],
       output: {
-        manualChunks: {
-          'radix': [
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-label',
-            '@radix-ui/react-avatar',
-            '@radix-ui/react-alert-dialog',
-            '@radix-ui/react-toast'
-          ]
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('@radix-ui')) {
+              return 'vendor-radix';
+            }
+            if (id.includes('@mui')) {
+              return 'vendor-mui';
+            }
+            if (id.includes('firebase')) {
+              return 'vendor-firebase';
+            }
+            return 'vendor';
+          }
         }
       }
     }
