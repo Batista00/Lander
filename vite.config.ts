@@ -10,7 +10,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['sonner', '@radix-ui/react-tooltip']
+    include: ['sonner', '@radix-ui/react-tooltip', '@google/generative-ai']
   },
   build: {
     outDir: 'dist',
@@ -34,6 +34,9 @@ export default defineConfig({
             }
             if (id.includes('sonner')) {
               return 'vendor-sonner';
+            }
+            if (id.includes('@google/generative-ai')) {
+              return 'vendor-google-ai';
             }
             return 'vendor';
           }
