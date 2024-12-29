@@ -1,35 +1,22 @@
-import { db } from '../config/firebase-admin';
-import { Payment } from '../../types/payment';
+import { db } from '../../firebase/admin';
 
-export async function createPayment(payment: Payment) {
-  try {
-    await db.collection('payments').doc(payment.id).set(payment);
-    return payment;
-  } catch (error) {
-    console.error('Error creating payment:', error);
-    throw new Error('Failed to create payment');
-  }
-}
+const paymentsRef = db.collection('payments');
 
-export async function getPaymentById(paymentId: string) {
-  try {
-    const paymentDoc = await db.collection('payments').doc(paymentId).get();
-    if (!paymentDoc.exists) {
-      return null;
-    }
-    return paymentDoc.data() as Payment;
-  } catch (error) {
-    console.error('Error getting payment:', error);
-    throw new Error('Failed to get payment');
-  }
-}
+export const createPayment = async (paymentData: any) => {
+  const docRef = await paymentsRef.add({
+    ...paymentData,
+    createdAt: new Date().toISOString()
+  });
+  return { id: docRef.id, ...paymentData };
+};
 
-export async function updatePayment(payment: Payment) {
-  try {
-    await db.collection('payments').doc(payment.id).update(payment);
-    return payment;
-  } catch (error) {
-    console.error('Error updating payment:', error);
-    throw new Error('Failed to update payment');
-  }
-}
+export const getPaymentById = async (paymentId: string) => {
+  const doc = await paymentsRef.doc(paymentId).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() };
+};
+
+export const updatePayment = async (payment: any) => {
+  await paymentsRef.doc(payment.id).update(payment);
+  return payment;
+};

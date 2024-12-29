@@ -1,47 +1,17 @@
-import { db } from '../config/firebase-admin';
-import { UserPlan, UserPlanUpdate } from '../../types/plans';
+import { db } from '../../firebase/admin';
 
-export async function getUserById(userId: string) {
-  const userDoc = await db.collection('users').doc(userId).get();
-  if (!userDoc.exists) {
-    throw new Error('User not found');
-  }
-  return userDoc.data();
-}
+const usersRef = db.collection('users');
 
-export async function updateUserPlan(userId: string, update: UserPlanUpdate) {
-  try {
-    const userRef = db.collection('users').doc(userId);
-    const userDoc = await userRef.get();
+export const getUserById = async (userId: string) => {
+  const doc = await usersRef.doc(userId).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() };
+};
 
-    if (!userDoc.exists) {
-      throw new Error('User not found');
-    }
-
-    const currentPlan = userDoc.data()?.plan as UserPlan;
-    
-    // Si el usuario tiene un plan activo, guardarlo en el historial
-    if (currentPlan && currentPlan.status === 'active') {
-      await db.collection('planHistory').add({
-        userId,
-        plan: currentPlan,
-        endDate: new Date().toISOString(),
-        reason: 'plan_change'
-      });
-    }
-
-    // Actualizar el plan del usuario
-    await userRef.update({
-      plan: {
-        ...currentPlan,
-        ...update,
-      },
-      updatedAt: new Date().toISOString()
-    });
-
-    return true;
-  } catch (error) {
-    console.error('Error updating user plan:', error);
-    throw new Error('Failed to update user plan');
-  }
-}
+export const updateUserPlan = async (userId: string, planData: any) => {
+  await usersRef.doc(userId).update({
+    plan: planData,
+    updatedAt: new Date().toISOString()
+  });
+  return { userId, ...planData };
+};

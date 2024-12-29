@@ -1,19 +1,17 @@
-import express from 'express';
-import mercadopago from 'mercadopago';
-import { Request, Response } from 'express';
-import { PaymentPreference, Payment, Subscription } from '../../types/payment';
-import { PlanId, BillingPeriod } from '../../types/plans';
+import express, { Request, Response, Router } from 'express';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { getUserById, updateUserPlan } from '../services/user';
 import { createPayment, getPaymentById, updatePayment } from '../services/payment';
 import { createSubscription, updateSubscription, getSubscriptionByPaymentId } from '../services/subscription';
 import { auth } from '../middleware/auth';
 
-const router = express.Router();
-
-// Configurar MercadoPago
-mercadopago.configure({
-  access_token: process.env.MERCADOPAGO_ACCESS_TOKEN || ''
+const router = Router();
+const client = new MercadoPagoConfig({ 
+  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '' 
 });
+
+const preference = new Preference(client);
+const payment = new Payment(client);
 
 // Middleware de autenticación para proteger las rutas
 router.use(auth);
@@ -21,36 +19,41 @@ router.use(auth);
 // Crear preferencia de pago
 router.post('/create-preference', async (req: Request, res: Response) => {
   try {
-    const { userId, planId, billingPeriod } = req.body;
+    const { planId, billingPeriod } = req.body;
+    const userId = req.user?.uid;
 
-    // Obtener detalles del plan
-    const plan = await getPlanById(planId);
-    if (!plan) {
-      return res.status(404).json({ error: 'Plan no encontrado' });
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuario no autenticado' });
     }
 
-    // Crear preferencia
-    const preference: PaymentPreference = {
-      items: [{
-        title: `${plan.name} - ${billingPeriod}`,
-        quantity: 1,
-        unit_price: plan.price,
-        description: plan.description
-      }],
-      metadata: {
-        userId,
-        planId,
-        billingPeriod
+    const user = await getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Crear preferencia de pago en MercadoPago
+    const preferenceData = {
+      items: [
+        {
+          title: `Plan ${planId}`,
+          quantity: 1,
+          currency_id: 'ARS',
+          unit_price: 100 // Precio ejemplo
+        }
+      ],
+      payer: {
+        email: user.email
       },
       back_urls: {
         success: `${process.env.FRONTEND_URL}/payment/success`,
         failure: `${process.env.FRONTEND_URL}/payment/failure`,
         pending: `${process.env.FRONTEND_URL}/payment/pending`
-      }
+      },
+      auto_return: 'approved'
     };
 
-    const response = await mercadopago.preferences.create(preference);
-    res.json(response.body);
+    const response = await preference.create({ body: preferenceData });
+    res.json(response);
   } catch (error) {
     console.error('Error al crear preferencia:', error);
     res.status(500).json({ error: 'Error al crear preferencia de pago' });
@@ -64,27 +67,27 @@ router.post('/success', async (req: Request, res: Response) => {
     const { userId, planId, billingPeriod } = metadata;
 
     // Obtener detalles del pago
-    const paymentInfo = await mercadopago.payment.get(payment_id);
+    const paymentInfo = await payment.get({ id: payment_id.toString() });
     
     // Crear registro de pago
-    const payment: Payment = {
+    const paymentData = {
       id: payment_id,
-      status: paymentInfo.body.status,
-      amount: paymentInfo.body.transaction_amount,
+      status: paymentInfo.status,
+      amount: paymentInfo.transaction_amount,
       userId,
       planId,
       billingPeriod,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    await createPayment(payment);
+    await createPayment(paymentData);
 
     // Actualizar plan del usuario
     const userPlanUpdate = {
       planId,
       billingPeriod,
       startDate: new Date().toISOString(),
-      endDate: calculateEndDate(billingPeriod),
+      endDate: null, // Plan gratuito no tiene fecha de finalización
       status: 'active'
     };
     await updateUserPlan(userId, userPlanUpdate);
@@ -96,57 +99,42 @@ router.post('/success', async (req: Request, res: Response) => {
   }
 });
 
-// Webhook para notificaciones de MercadoPago
+// Webhook para notificaciones de pago
 router.post('/webhook', async (req: Request, res: Response) => {
   try {
     const { type, data } = req.body;
 
     if (type === 'payment') {
-      const paymentInfo = await mercadopago.payment.get(data.id);
-      const payment = await getPaymentById(data.id);
-      
-      if (payment) {
-        // Actualizar estado del pago
-        payment.status = paymentInfo.body.status;
-        payment.updatedAt = new Date().toISOString();
-        await updatePayment(payment);
+      const paymentId = data.id;
+      const paymentInfo = await payment.get({ id: paymentId.toString() });
 
-        // Si el pago es recurrente, actualizar suscripción
-        const subscription = await getSubscriptionByPaymentId(data.id);
-        if (subscription) {
-          subscription.lastPaymentDate = new Date().toISOString();
-          subscription.nextPaymentDate = calculateNextPaymentDate(subscription.billingPeriod);
-          await updateSubscription(subscription);
-        }
+      if (paymentInfo.status === 'approved') {
+        // Actualizar plan del usuario
+        // Implementar lógica según necesidades
       }
     }
 
-    res.json({ received: true });
+    res.sendStatus(200);
   } catch (error) {
     console.error('Error en webhook:', error);
-    res.status(500).json({ error: 'Error al procesar webhook' });
+    res.sendStatus(500);
   }
 });
 
-function calculateEndDate(billingPeriod: BillingPeriod): string {
-  const date = new Date();
-  if (billingPeriod === 'monthly') {
-    date.setMonth(date.getMonth() + 1);
-  } else {
-    date.setFullYear(date.getFullYear() + 1);
-  }
-  return date.toISOString();
-}
-
-function calculateNextPaymentDate(billingPeriod: BillingPeriod): string {
-  return calculateEndDate(billingPeriod);
-}
-
 // Rutas para manejar el retorno del pago
 router.get('/success', async (req: Request, res: Response) => {
-  const paymentId = req.query.payment_id;
-  // Aquí podrías verificar el estado del pago si lo necesitas
-  res.redirect(`${process.env.FRONTEND_URL}/payment/success?payment_id=${paymentId}`);
+  const { payment_id } = req.query;
+  try {
+    if (!payment_id) {
+      return res.status(400).json({ error: 'ID de pago no proporcionado' });
+    }
+
+    const paymentInfo = await payment.get({ id: payment_id.toString() });
+    res.json({ status: 'success', payment: paymentInfo });
+  } catch (error) {
+    console.error('Error al procesar pago:', error);
+    res.status(500).json({ error: 'Error al procesar el pago' });
+  }
 });
 
 router.get('/failure', async (req: Request, res: Response) => {

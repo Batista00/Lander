@@ -1,45 +1,28 @@
-import { db } from '../config/firebase-admin';
-import { Subscription } from '../../types/payment';
+import { db } from '../../firebase/admin';
 
-export async function createSubscription(subscription: Subscription) {
-  try {
-    await db.collection('subscriptions').doc(subscription.id).set(subscription);
-    return subscription;
-  } catch (error) {
-    console.error('Error creating subscription:', error);
-    throw new Error('Failed to create subscription');
-  }
-}
+const subscriptionsRef = db.collection('subscriptions');
 
-export async function updateSubscription(subscription: Subscription) {
-  try {
-    await db.collection('subscriptions').doc(subscription.id).update(subscription);
-    return subscription;
-  } catch (error) {
-    console.error('Error updating subscription:', error);
-    throw new Error('Failed to update subscription');
-  }
-}
+export const createSubscription = async (subscriptionData: any) => {
+  const docRef = await subscriptionsRef.add({
+    ...subscriptionData,
+    createdAt: new Date().toISOString()
+  });
+  return { id: docRef.id, ...subscriptionData };
+};
 
-export async function getSubscriptionByPaymentId(paymentId: string) {
-  try {
-    const subscriptionsSnapshot = await db.collection('subscriptions')
-      .where('lastPaymentId', '==', paymentId)
-      .limit(1)
-      .get();
+export const getSubscriptionByPaymentId = async (paymentId: string) => {
+  const snapshot = await subscriptionsRef.where('paymentId', '==', paymentId).get();
+  if (snapshot.empty) return null;
+  const doc = snapshot.docs[0];
+  return { id: doc.id, ...doc.data() };
+};
 
-    if (subscriptionsSnapshot.empty) {
-      return null;
-    }
+export const updateSubscription = async (subscription: any) => {
+  await subscriptionsRef.doc(subscription.id).update(subscription);
+  return subscription;
+};
 
-    return subscriptionsSnapshot.docs[0].data() as Subscription;
-  } catch (error) {
-    console.error('Error getting subscription:', error);
-    throw new Error('Failed to get subscription');
-  }
-}
-
-export async function getActiveSubscriptionByUserId(userId: string) {
+export const getActiveSubscriptionByUserId = async (userId: string) => {
   try {
     const subscriptionsSnapshot = await db.collection('subscriptions')
       .where('userId', '==', userId)
@@ -51,9 +34,9 @@ export async function getActiveSubscriptionByUserId(userId: string) {
       return null;
     }
 
-    return subscriptionsSnapshot.docs[0].data() as Subscription;
+    return subscriptionsSnapshot.docs[0].data();
   } catch (error) {
     console.error('Error getting subscription:', error);
     throw new Error('Failed to get subscription');
   }
-}
+};
