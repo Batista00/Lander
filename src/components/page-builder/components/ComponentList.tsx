@@ -116,8 +116,8 @@ export function ComponentList({
                       {...provided.dragHandleProps}
                       className={`
                         p-2 rounded-md border
-                        ${selectedId === component.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}
-                        cursor-move hover:bg-gray-50
+                        ${selectedId === component.id ? 'border-[#00FF7F] bg-[#00FF7F]/5' : 'border-gray-200'}
+                        cursor-move hover:bg-[#00FF7F]/5
                       `}
                       onClick={() => onSelect?.(component)}
                     >

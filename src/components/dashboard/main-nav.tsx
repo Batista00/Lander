@@ -4,15 +4,13 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  ShoppingBag,
-  Heart,
   Store,
-  ShoppingCart,
-  Settings,
-  Package,
   Users,
+  BarChart,
+  Settings,
   Megaphone,
-  PieChart
+  Plus,
+  List
 } from "lucide-react";
 
 const mainNavItems = [
@@ -20,6 +18,23 @@ const mainNavItems = [
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Landing Pages",
+    href: "/dashboard/landing-pages",
+    icon: Store,
+    children: [
+      {
+        title: "Todas las Landing Pages",
+        href: "/dashboard/landing-pages",
+        icon: List,
+      },
+      {
+        title: "Crear Landing Page",
+        href: "/dashboard/landing-pages/editor/new",
+        icon: Plus,
+      }
+    ]
   },
   {
     title: "Leads",
@@ -32,11 +47,6 @@ const mainNavItems = [
         icon: Users,
       },
       {
-        title: "Segmentos",
-        href: "/dashboard/leads/segments",
-        icon: PieChart,
-      },
-      {
         title: "Campañas",
         href: "/dashboard/leads/campaigns",
         icon: Megaphone,
@@ -44,36 +54,14 @@ const mainNavItems = [
     ]
   },
   {
-    title: "Marketplace",
-    href: "/dashboard/marketplace",
-    icon: ShoppingBag,
-    children: [
-      {
-        title: "Explorar",
-        href: "/dashboard/marketplace",
-        icon: Store,
-      },
-      {
-        title: "Mis Compras",
-        href: "/dashboard/marketplace/my-purchases",
-        icon: ShoppingCart,
-      },
-      {
-        title: "Favoritos",
-        href: "/dashboard/marketplace/favorites",
-        icon: Heart,
-      },
-      {
-        title: "Mis Productos",
-        href: "/dashboard/marketplace/my-products",
-        icon: Package,
-      },
-      {
-        title: "Vender",
-        href: "/dashboard/marketplace/my-products/new",
-        icon: Store,
-      }
-    ]
+    title: "Analytics",
+    href: "/dashboard/analytics",
+    icon: BarChart,
+  },
+  {
+    title: "Configuración",
+    href: "/dashboard/settings",
+    icon: Settings,
   }
 ];
 
@@ -83,7 +71,8 @@ export function MainNav() {
   return (
     <nav className="flex flex-col space-y-1">
       {mainNavItems.map((item) => {
-        const isActive = location.pathname.startsWith(item.href);
+        const isActive = location.pathname === item.href || 
+                        (item.children && item.children.some(child => location.pathname.startsWith(child.href)));
         
         return (
           <div key={item.href}>

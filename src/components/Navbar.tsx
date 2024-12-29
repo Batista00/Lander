@@ -8,18 +8,9 @@ import {
   User,
   Settings,
   LogOut,
-  Users,
   ChevronDown,
   Blocks,
-  BookOpen,
-  Rocket,
-  Target,
-  LineChart,
-  Award,
-  ShoppingCart,
-  ShoppingBag,
-  Heart,
-  Package
+  Rocket
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '../hooks/useNavigation';
@@ -35,15 +26,9 @@ export function Navbar() {
     handleDashboard,
     handleAccount,
     handleSettings,
-    handleReferralProgram,
     handleFeatures,
     handlePricing,
-    handleCommunity,
-    handleSupport,
-    handleMarketplace,
-    handleMyPurchases,
-    handleFavorites,
-    handleMyProducts
+    handleSupport
   } = useNavigation();
 
   const notifications = [
@@ -96,12 +81,6 @@ export function Navbar() {
               className="text-gray-300 hover:text-white transition-colors"
             >
               Precios
-            </button>
-            <button
-              onClick={handleCommunity}
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Comunidad
             </button>
             <button
               onClick={handleSupport}
@@ -181,43 +160,23 @@ export function Navbar() {
                       >
                         <button
                           onClick={() => {
-                            handleMarketplace();
+                            handleAccount();
                             setShowUserMenu(false);
                           }}
                           className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
                         >
-                          <ShoppingCart className="w-4 h-4" />
-                          <span>Marketplace</span>
+                          <User className="w-4 h-4" />
+                          <span>Mi Cuenta</span>
                         </button>
                         <button
                           onClick={() => {
-                            handleMyPurchases();
+                            handleSettings();
                             setShowUserMenu(false);
                           }}
                           className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
                         >
-                          <ShoppingBag className="w-4 h-4" />
-                          <span>Mis Compras</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            handleFavorites();
-                            setShowUserMenu(false);
-                          }}
-                          className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
-                        >
-                          <Heart className="w-4 h-4" />
-                          <span>Favoritos</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            handleMyProducts();
-                            setShowUserMenu(false);
-                          }}
-                          className="w-full flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors"
-                        >
-                          <Package className="w-4 h-4" />
-                          <span>Mis Productos</span>
+                          <Settings className="w-4 h-4" />
+                          <span>Configuración</span>
                         </button>
                         <div className="border-t border-white/10 my-2"></div>
                         <button
@@ -287,50 +246,26 @@ export function Navbar() {
                     </button>
                     <button
                       onClick={() => {
-                        handleMarketplace();
+                        handleAccount();
                         setIsOpen(false);
                       }}
                       className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
                     >
-                      <ShoppingCart className="w-4 h-4" />
-                      <span>Marketplace</span>
+                      <User className="w-4 h-4" />
+                      <span>Mi Cuenta</span>
                     </button>
                     <button
                       onClick={() => {
-                        handleMyPurchases();
+                        handleSettings();
                         setIsOpen(false);
                       }}
                       className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
                     >
-                      <ShoppingBag className="w-4 h-4" />
-                      <span>Mis Compras</span>
+                      <Settings className="w-4 h-4" />
+                      <span>Configuración</span>
                     </button>
                     <button
-                      onClick={() => {
-                        handleFavorites();
-                        setIsOpen(false);
-                      }}
-                      className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
-                    >
-                      <Heart className="w-4 h-4" />
-                      <span>Favoritos</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleMyProducts();
-                        setIsOpen(false);
-                      }}
-                      className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
-                    >
-                      <Package className="w-4 h-4" />
-                      <span>Mis Productos</span>
-                    </button>
-                    <div className="border-t border-white/10 my-2"></div>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setIsOpen(false);
-                      }}
+                      onClick={handleLogout}
                       className="flex items-center space-x-2 px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors rounded-lg"
                     >
                       <LogOut className="w-4 h-4" />
@@ -341,46 +276,21 @@ export function Navbar() {
                   <>
                     <button
                       onClick={handleFeatures}
-                      className="text-gray-300 hover:text-white transition-colors"
+                      className="text-gray-300 hover:text-white transition-colors px-4 py-2"
                     >
                       Características
                     </button>
                     <button
                       onClick={handlePricing}
-                      className="text-gray-300 hover:text-white transition-colors"
+                      className="text-gray-300 hover:text-white transition-colors px-4 py-2"
                     >
                       Precios
                     </button>
                     <button
-                      onClick={handleCommunity}
-                      className="text-gray-300 hover:text-white transition-colors"
-                    >
-                      Comunidad
-                    </button>
-                    <button
                       onClick={handleSupport}
-                      className="text-gray-300 hover:text-white transition-colors"
+                      className="text-gray-300 hover:text-white transition-colors px-4 py-2"
                     >
                       Soporte
-                    </button>
-                    <div className="border-t border-white/10 my-2"></div>
-                    <button
-                      onClick={() => {
-                        navigate('/auth/login');
-                        setIsOpen(false);
-                      }}
-                      className="text-white hover:text-[#00E5B0] transition-colors"
-                    >
-                      Iniciar Sesión
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigate('/auth/register');
-                        setIsOpen(false);
-                      }}
-                      className="px-4 py-2 rounded-full bg-gradient-to-r from-[#FF1F8C] to-[#00E5B0] text-white font-medium hover:opacity-90 transition-all text-center"
-                    >
-                      Registrarse
                     </button>
                   </>
                 )}

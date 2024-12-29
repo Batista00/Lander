@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ChatWidget } from '@/components/chat/ChatWidget';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { TokenProvider } from '@/contexts/TokenContext';
+import { Toaster } from 'sonner';
 import "./globals.css";
 import "@/components/chat/ChatWidget.css";
 
@@ -42,8 +45,13 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={inter.className}>
-        {children}
-        <ChatWidget pageContext={globalContext} />
+        <AuthProvider>
+          <TokenProvider>
+            {children}
+            <ChatWidget pageContext={globalContext} />
+            <Toaster />
+          </TokenProvider>
+        </AuthProvider>
       </body>
     </html>
   );

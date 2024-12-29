@@ -79,7 +79,7 @@ const DevicePreviewButton = ({ isSelected, ...props }) => (
   />
 );
 
-const LandingTemplates = () => {
+export function LandingTemplates() {
   const navigate = useNavigate();
   const userPlan = useUserPlan();
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
@@ -458,6 +458,4 @@ const LandingTemplates = () => {
       </Dialog>
     </Box>
   );
-};
-
-export default LandingTemplates;
+}

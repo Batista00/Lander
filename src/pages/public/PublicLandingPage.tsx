@@ -1,7 +1,8 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { landingPageService } from '@/services/landingPageService';
-import { ComponentRenderer } from '@/components/page-builder/ComponentRenderer';
+import { LandingPreview } from '@/components/page-builder/preview/LandingPreview';
+import { Loader2 } from 'lucide-react';
 
 export const PublicLandingPage: React.FC = () => {
   const { pageId } = useParams<{ pageId: string }>();
@@ -16,12 +17,12 @@ export const PublicLandingPage: React.FC = () => {
           throw new Error('Page ID not found');
         }
 
-        const page = await landingPageService.getLandingPageById(pageId);
+        const page = await landingPageService.getLandingPage(pageId);
         if (!page) {
           throw new Error('Landing page not found');
         }
 
-        if (!page.isPublished) {
+        if (page.status !== 'published') {
           throw new Error('This landing page is not published');
         }
 
@@ -39,7 +40,7 @@ export const PublicLandingPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -53,15 +54,5 @@ export const PublicLandingPage: React.FC = () => {
     );
   }
 
-  return (
-    <div className="w-full">
-      {landingPage.components.map((component: any, index: number) => (
-        <ComponentRenderer
-          key={component.id || index}
-          component={component}
-          isEditing={false}
-        />
-      ))}
-    </div>
-  );
+  return <LandingPreview landingPage={landingPage} />;
 };

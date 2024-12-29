@@ -1,253 +1,118 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { Component } from '@/types/landing';
-import { ComponentEditorProps } from '@/types/components';
-import { featuresVariants } from './variants/features-variants';
 import { motion } from 'framer-motion';
-import * as Icons from '@/components/ui/icons';
 
 interface Feature {
-  icon?: string;
   title: string;
   description: string;
+  icon?: string;
 }
 
-interface FeaturesProps extends ComponentEditorProps {
-  component: Component;
-  mode?: 'preview' | 'published' | 'edit';
-  onChange?: (component: Component) => void;
+export interface FeaturesProps {
+  content: {
+    title: string;
+    description?: string;
+    features: Feature[];
+  };
+  styles?: {
+    colors?: {
+      text?: string;
+      background?: string;
+      accent?: string;
+    };
+    spacing?: {
+      padding?: string;
+    };
+  };
 }
 
-export const Features: React.FC<FeaturesProps> = ({
-  component,
-  onChange,
-  mode = 'preview'
-}) => {
-  const variant = component.content?.variant || 'grid';
-  const variantConfig = featuresVariants[variant];
-
-  const {
-    title = variantConfig?.defaultContent?.title || '',
-    subtitle = variantConfig?.defaultContent?.subtitle || '',
-    features = variantConfig?.defaultContent?.features || []
-  } = component.content || {};
-
-  const styles = variantConfig?.styles || {};
-  const colors = styles.colors || {};
-  const typography = styles.typography || {};
-  const spacing = styles.spacing || {};
-  const layout = styles.layout || {};
-  const effects = styles.effects || {};
-
-  const containerClasses = cn(
-    'relative w-full',
-    spacing.padding || 'py-16',
-    colors.background || 'bg-white'
-  );
-
-  const contentClasses = cn(
-    'container mx-auto px-4',
-    layout.alignment === 'center' ? 'text-center' : '',
-    layout.alignment === 'left' ? 'text-left' : '',
-    layout.alignment === 'right' ? 'text-right' : ''
-  );
-
-  const titleClasses = cn(
-    typography.titleSize || 'text-4xl',
-    'font-bold tracking-tight',
-    colors.text || 'text-gray-900'
-  );
-
-  const subtitleClasses = cn(
-    typography.subtitleSize || 'text-xl',
-    'mt-4',
-    colors.text || 'text-gray-600'
-  );
-
-  const featureContainerClasses = cn(
-    'grid gap-8',
-    layout.columns === 2 ? 'grid-cols-1 md:grid-cols-2' : '',
-    layout.columns === 3 ? 'grid-cols-1 md:grid-cols-3' : '',
-    layout.columns === 4 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : '',
-    spacing.gap || 'gap-8'
-  );
-
-  const featureTitleClasses = cn(
-    typography.featureTitleSize || 'text-xl',
-    'font-semibold',
-    colors.text || 'text-gray-900'
-  );
-
-  const featureDescriptionClasses = cn(
-    typography.featureDescriptionSize || 'text-base',
-    colors.text || 'text-gray-600'
-  );
-
-  const featureIconClasses = cn(
-    'w-12 h-12 p-3 rounded-lg mb-4',
-    colors.iconBackground || 'bg-gray-100',
-    effects.cardRadius || 'rounded-lg',
-    effects.transition || 'transition-all duration-300'
-  );
-
-  const isEditing = mode === 'edit';
-
-  const handleChange = (field: string, value: any) => {
-    if (!onChange) return;
-    
-    onChange({
-      ...component,
-      content: {
-        ...component.content,
-        [field]: value
-      }
-    });
-  };
-
-  const renderIcon = (iconName: string) => {
-    const IconComponent = Icons[iconName as keyof typeof Icons];
-    return IconComponent ? <IconComponent className="w-6 h-6" /> : null;
-  };
-
-  const renderFeature = (feature: Feature, index: number) => {
-    const FeatureWrapper = motion.div;
-    
-    switch (variant) {
-      case 'cards':
-        return (
-          <FeatureWrapper
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className={cn(
-              'p-6',
-              effects.cardShadow || 'shadow-sm',
-              effects.cardRadius || 'rounded-lg',
-              effects.transition || 'transition-all duration-300',
-              'hover:shadow-md'
-            )}
-          >
-            {feature.icon && (
-              <div className={featureIconClasses}>
-                {React.createElement(
-                  Icons[feature.icon as keyof typeof Icons] || Icons.Star,
-                  {
-                    className: cn('w-6 h-6', colors.accent || 'text-blue-600')
-                  }
-                )}
-              </div>
-            )}
-            <h3 className={featureTitleClasses}>{feature.title}</h3>
-            <p className={featureDescriptionClasses}>{feature.description}</p>
-          </FeatureWrapper>
-        );
-
-      case 'list':
-        return (
-          <FeatureWrapper
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className={cn(
-              'flex items-start',
-              spacing.gap || 'gap-8'
-            )}
-          >
-            {feature.icon && (
-              <div className={featureIconClasses}>
-                {React.createElement(
-                  Icons[feature.icon as keyof typeof Icons] || Icons.Star,
-                  {
-                    className: cn('w-6 h-6', colors.accent || 'text-blue-600')
-                  }
-                )}
-              </div>
-            )}
-            <div>
-              <h3 className={featureTitleClasses}>{feature.title}</h3>
-              <p className={featureDescriptionClasses}>{feature.description}</p>
-            </div>
-          </FeatureWrapper>
-        );
-
-      default: // grid
-        return (
-          <FeatureWrapper
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className={cn(
-              'text-center',
-              spacing.gap || 'gap-8'
-            )}
-          >
-            {feature.icon && (
-              <div className={featureIconClasses}>
-                {React.createElement(
-                  Icons[feature.icon as keyof typeof Icons] || Icons.Star,
-                  {
-                    className: cn('w-6 h-6', colors.accent || 'text-blue-600')
-                  }
-                )}
-              </div>
-            )}
-            <h3 className={featureTitleClasses}>{feature.title}</h3>
-            <p className={featureDescriptionClasses}>{feature.description}</p>
-          </FeatureWrapper>
-        );
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+      when: "beforeChildren",
+      staggerChildren: 0.1
     }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5
+    }
+  }
+};
+
+export const Features: React.FC<FeaturesProps> = ({ content, styles = {} }) => {
+  const themeColors = {
+    text: styles.colors?.text || '#000000',
+    background: styles.colors?.background || '#ffffff',
+    accent: styles.colors?.accent || '#3b82f6'
+  };
+
+  const componentStyle = {
+    backgroundColor: themeColors.background,
+    color: themeColors.text,
+    ...styles.spacing
   };
 
   return (
-    <motion.section
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className={containerClasses}
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      style={componentStyle}
+      className="py-16"
     >
-      <div className={contentClasses}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+      <div className="container mx-auto px-4">
+        <motion.h2
+          variants={itemVariants}
+          className="text-3xl font-bold mb-6 text-center"
         >
-          {isEditing ? (
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => handleChange('title', e.target.value)}
-              className={cn(
-                'w-full text-center bg-transparent border-none mb-4 focus:ring-2 focus:ring-blue-500',
-                titleClasses
-              )}
-              placeholder="Título de características"
-            />
-          ) : (
-            <h2 className={titleClasses}>{title}</h2>
-          )}
-          {isEditing ? (
-            <input
-              type="text"
-              value={subtitle}
-              onChange={(e) => handleChange('subtitle', e.target.value)}
-              className={cn(
-                'w-full text-center bg-transparent border-none mb-8 focus:ring-2 focus:ring-blue-500',
-                subtitleClasses
-              )}
-              placeholder="Subtítulo de características"
-            />
-          ) : (
-            <p className={subtitleClasses}>{subtitle}</p>
-          )}
+          {content.title || 'Características'}
+        </motion.h2>
 
-          <div className={featureContainerClasses}>
-            {features.map((feature, index) => renderFeature(feature, index))}
-          </div>
-        </motion.div>
+        {content.description && (
+          <motion.p
+            variants={itemVariants}
+            className="text-xl mb-12 text-center"
+          >
+            {content.description}
+          </motion.p>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {content.features.map((feature, index) => (
+            <motion.div
+              key={index}
+              variants={itemVariants}
+              className="text-center p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+            >
+              {feature.icon && (
+                <div className="mb-4">
+                  <span 
+                    className="text-4xl inline-block"
+                    style={{ color: themeColors.accent }}
+                  >
+                    {feature.icon}
+                  </span>
+                </div>
+              )}
+              <h3 className="text-xl font-semibold mb-3">
+                {feature.title}
+              </h3>
+              <p className="text-gray-600">
+                {feature.description}
+              </p>
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </motion.section>
+    </motion.div>
   );
 };

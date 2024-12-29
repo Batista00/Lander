@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Component } from '@/types/landing';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,8 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { X } from 'lucide-react';
 import { toast } from '@/components/ui/toast';
 
-interface EditComponentDialogProps {
-  component: Component;
+export interface EditComponentDialogProps {
+  component: Component | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (component: Component) => void;
@@ -150,14 +150,16 @@ const defaultComponents = {
   },
 };
 
-export function EditComponentDialog({
+export const EditComponentDialog: React.FC<EditComponentDialogProps> = ({
   component,
   open,
   onOpenChange,
   onSave,
-}: EditComponentDialogProps) {
-  const [editedComponent, setEditedComponent] = useState<Component>(component);
+}) => {
+  const [editedComponent, setEditedComponent] = useState<Component | null>(component);
   const [activeTab, setActiveTab] = useState('content');
+
+  if (!component || !editedComponent) return null;
 
   useEffect(() => {
     setEditedComponent(component);
@@ -532,4 +534,4 @@ export function EditComponentDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};

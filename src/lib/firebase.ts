@@ -9,17 +9,24 @@ import { getAnalytics } from 'firebase/analytics';
 
 // Configuración de Firebase
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDZn3Pe5re0S_WaiBtUVe0J3xzI93NEUko",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "landing-f9bda.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "landing-f9bda",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "landing-f9bda.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "254840276080",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:254840276080:web:e2f08cae9134a83136e0b5",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-RWBM2KGC4Z"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Inicializar Firebase
-const app = initializeApp(firebaseConfig);
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+  console.log('Firebase initialized successfully');
+} catch (error) {
+  console.error('Error initializing Firebase:', error);
+  throw error;
+}
 
 // Inicializar servicios
 const db = getFirestore(app);
@@ -27,10 +34,17 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
 
+// Log de configuración (sin exponer datos sensibles)
+console.log('Firebase configuration loaded:', {
+  authDomain: firebaseConfig.authDomain,
+  projectId: firebaseConfig.projectId,
+  storageBucket: firebaseConfig.storageBucket
+});
+
 // Habilitar persistencia multi-pestaña
 enableMultiTabIndexedDbPersistence(db)
   .then(() => {
-    console.log('Persistencia de Firestore habilitada');
+    console.log('Firestore persistence enabled');
   })
   .catch((err) => {
     if (err.code === 'failed-precondition') {

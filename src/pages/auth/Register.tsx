@@ -11,9 +11,19 @@ import { useAuth } from '../../contexts/AuthContext';
 import { FirebaseError } from 'firebase/app';
 
 const registerSchema = z.object({
-  email: z.string().email('Correo electrónico inválido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-  confirmPassword: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  email: z.string()
+    .email('Correo electrónico inválido')
+    .refine((email) => {
+      // Opcional: validar dominios específicos
+      const allowedDomains = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com'];
+      const domain = email.split('@')[1];
+      return allowedDomains.includes(domain);
+    }, 'Por favor, utiliza un proveedor de correo electrónico válido'),
+  password: z.string()
+    .min(8, 'La contraseña debe tener al menos 8 caracteres')
+    .regex(/[A-Z]/, 'La contraseña debe contener al menos una letra mayúscula')
+    .regex(/[0-9]/, 'La contraseña debe contener al menos un número'),
+  confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Las contraseñas no coinciden",
   path: ["confirmPassword"],
@@ -50,11 +60,21 @@ export function Register() {
     try {
       setIsLoading(true);
       setError('');
+      
+      // Validación adicional de seguridad
+      const commonPasswords = ['password', '12345678', 'qwerty123'];
+      if (commonPasswords.includes(data.password.toLowerCase())) {
+        setError('Por favor, elige una contraseña más segura');
+        return;
+      }
+
       await signUp(data.email, data.password);
       navigate('/dashboard');
     } catch (err) {
       if (err instanceof FirebaseError) {
         setError(getFirebaseErrorMessage(err));
+      } else if (err instanceof Error) {
+        setError(err.message);
       } else {
         setError('Error al crear la cuenta. Por favor, intente de nuevo');
       }

@@ -40,7 +40,7 @@ interface ArchivedPage {
   previewImage?: string;
 }
 
-const LandingArchived = () => {
+export function LandingArchived() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [archived, setArchived] = useState<ArchivedPage[]>([]);
@@ -325,6 +325,4 @@ const LandingArchived = () => {
       </Dialog>
     </Box>
   );
-};
-
-export default LandingArchived;
+}

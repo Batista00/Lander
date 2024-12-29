@@ -69,7 +69,7 @@ export const useLandingStore = create<LandingStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       console.log('Creando nueva landing page:', name);
-      const newLanding = await landingPageService.createLandingPage(name);
+      const newLanding = await landingPageService.createPage(name);
       if (!newLanding) {
         throw new Error('Error al crear la landing page');
       }

@@ -1,0 +1,96 @@
+/* Estilos base para botones */
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 ease-in-out;
+}
+
+/* Botón primario con gradiente verde */
+.btn-primary {
+  @apply relative overflow-hidden;
+  background: linear-gradient(135deg, #00E676 0%, #1DE9B6 100%);
+  box-shadow: 0 4px 15px rgba(0, 230, 118, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #00E676 0%, #00C853 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 230, 118, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(0, 230, 118, 0.3);
+}
+
+/* Botón secundario con borde verde */
+.btn-secondary {
+  @apply bg-transparent border-2;
+  border-image: linear-gradient(135deg, #00E676 0%, #1DE9B6 100%) 1;
+  color: #00E676;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, rgba(0, 230, 118, 0.1) 0%, rgba(29, 233, 182, 0.1) 100%);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+/* Botón outline */
+.btn-outline {
+  @apply bg-transparent border-2 border-[#00E676] text-[#00E676];
+}
+
+.btn-outline:hover {
+  @apply bg-[#00E676] text-white;
+  transform: translateY(-1px);
+}
+
+.btn-outline:active {
+  transform: translateY(1px);
+}
+
+/* Botón disabled */
+.btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Tamaños de botones */
+.btn-sm {
+  @apply px-3 py-1.5 text-sm;
+}
+
+.btn-md {
+  @apply px-4 py-2;
+}
+
+.btn-lg {
+  @apply px-6 py-3 text-lg;
+}
+
+/* Efecto de brillo en hover */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+  transition: all 0.3s;
+  opacity: 0;
+}
+
+.btn-primary:hover::after {
+  opacity: 1;
+  transform: rotate(45deg) translate(50%, 50%);
+}

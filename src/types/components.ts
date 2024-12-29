@@ -1,7 +1,4 @@
-import { Component } from './landing';
-
-export { ComponentType } from './landing';
-export type { ComponentStyles, ComponentContentTypes } from './landing';
+import { HeroProps, FeaturesProps, BenefitsProps, CTAProps } from '@/components/page-builder/components/base';
 
 // Interfaces específicas para cada tipo de componente
 export interface HeroContent {
@@ -111,6 +108,37 @@ export interface ContactContent {
   address: string;
 }
 
+export interface ComponentBase {
+  id: string;
+  type: 'hero' | 'features' | 'benefits' | 'cta';
+}
+
+export interface HeroComponent extends ComponentBase {
+  type: 'hero';
+  props: HeroProps;
+}
+
+export interface FeaturesComponent extends ComponentBase {
+  type: 'features';
+  props: FeaturesProps;
+}
+
+export interface BenefitsComponent extends ComponentBase {
+  type: 'benefits';
+  props: BenefitsProps;
+}
+
+export interface CTAComponent extends ComponentBase {
+  type: 'cta';
+  props: CTAProps;
+}
+
+export type BaseComponent = 
+  | HeroComponent 
+  | FeaturesComponent 
+  | BenefitsComponent 
+  | CTAComponent;
+
 export interface ComponentVariant {
   name: string;
   description: string;
@@ -150,9 +178,9 @@ export interface ComponentVariant {
 
 // Interfaz para las propiedades de los componentes en el editor
 export interface ComponentEditorProps {
-  component: Component;
+  component: BaseComponent;
   mode?: 'preview' | 'published' | 'edit';
-  onChange?: (component: Component) => void;
+  onChange?: (component: BaseComponent) => void;
   themeStyles?: string;
   isPremium?: boolean;
 }

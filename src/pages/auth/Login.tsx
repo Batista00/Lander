@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Blocks } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { FirebaseError } from 'firebase/app';
 
 const loginSchema = z.object({
   email: z.string().email('Correo electrónico inválido'),
@@ -24,20 +23,33 @@ export function Login() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
 
+  const defaultEmail = localStorage.getItem('lastEmail') || '';
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: defaultEmail,
+      rememberMe: !!defaultEmail
+    }
   });
 
   const onSubmit = async (data: LoginForm) => {
     try {
       setIsLoading(true);
       setError('');
-      await signIn(data.email, data.password);
+
+      await signIn(data.email, data.password, data.rememberMe);
+      
+      // Guardar el email para autocompletar en futuros inicios de sesión
+      if (data.rememberMe) {
+        localStorage.setItem('lastEmail', data.email);
+      } else {
+        localStorage.removeItem('lastEmail');
+      }
+
       navigate('/dashboard');
     } catch (err) {
-      if (err instanceof FirebaseError) {
-        // El mensaje de error ya es manejado por el AuthContext
-        setError('Por favor, verifica tus credenciales e intenta de nuevo.');
+      if (err instanceof Error) {
+        setError(err.message);
       } else {
         setError('Error al iniciar sesión. Por favor, intente de nuevo');
       }

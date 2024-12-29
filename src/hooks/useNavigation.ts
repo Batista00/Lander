@@ -15,37 +15,6 @@ export function useNavigation() {
     return true;
   };
 
-  // Marketplace Navigation
-  const handleMarketplace = () => {
-    if (requireAuth('/dashboard/marketplace')) {
-      navigate('/dashboard/marketplace');
-    }
-  };
-
-  const handleMyPurchases = () => {
-    if (requireAuth('/dashboard/marketplace/my-purchases')) {
-      navigate('/dashboard/marketplace/my-purchases');
-    }
-  };
-
-  const handleFavorites = () => {
-    if (requireAuth('/dashboard/marketplace/favorites')) {
-      navigate('/dashboard/marketplace/favorites');
-    }
-  };
-
-  const handleMyProducts = () => {
-    if (requireAuth('/dashboard/marketplace/my-products')) {
-      navigate('/dashboard/marketplace/my-products');
-    }
-  };
-
-  const handleMarketplaceSettings = () => {
-    if (requireAuth('/dashboard/marketplace/settings')) {
-      navigate('/dashboard/marketplace/settings');
-    }
-  };
-
   // Landing Pages Navigation
   const handleLandingPages = () => {
     if (requireAuth('/dashboard/landing-pages')) {
@@ -56,6 +25,19 @@ export function useNavigation() {
   const handleNewLandingPage = () => {
     if (requireAuth('/dashboard/landing-pages/new')) {
       navigate('/dashboard/landing-pages/new');
+    }
+  };
+
+  // Account Navigation
+  const handleAccount = () => {
+    if (requireAuth('/dashboard/account')) {
+      navigate('/dashboard/account');
+    }
+  };
+
+  const handleSettings = () => {
+    if (requireAuth('/dashboard/settings')) {
+      navigate('/dashboard/settings');
     }
   };
 
@@ -74,26 +56,18 @@ export function useNavigation() {
     navigate('/features');
   };
 
-  const handleCommunity = () => {
-    navigate('/community');
-  };
-
   const handleSupport = () => {
     navigate('/support');
   };
 
   return {
-    handleMarketplace,
-    handleMyPurchases,
-    handleFavorites,
-    handleMyProducts,
-    handleMarketplaceSettings,
     handleLandingPages,
     handleNewLandingPage,
+    handleAccount,
+    handleSettings,
     handleDashboard,
     handlePricing,
     handleFeatures,
-    handleCommunity,
     handleSupport,
   };
 }

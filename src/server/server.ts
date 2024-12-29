@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import { json } from 'body-parser';
-import paymentRoutes from './routes/payment';
-import { handleMercadoPagoWebhook } from './webhooks/mercadoPago';
 
 const app = express();
 
@@ -13,12 +11,8 @@ app.use(cors({
 }));
 app.use(json());
 
-// Rutas
-app.use('/api/payment', paymentRoutes);
-app.post('/api/webhooks/mercadopago', handleMercadoPagoWebhook);
-
 // Manejo de errores
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal Server Error' });
 });

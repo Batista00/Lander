@@ -11,13 +11,13 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { FirebaseError } from 'firebase/app';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -38,28 +38,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setPersistence(auth, browserLocalPersistence)
-      .then(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          setUser(user);
-          setLoading(false);
-        });
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
 
-        return () => unsubscribe();
-      })
-      .catch((error) => {
-        toast.error('Error al configurar la persistencia', error.message);
-        setLoading(false);
-      });
+    return () => unsubscribe();
   }, []);
 
-  async function signIn(email: string, password: string) {
+  async function signIn(email: string, password: string, rememberMe = false) {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success('Inicio de sesión exitoso', 'Bienvenido de vuelta');
+      // Configurar persistencia según la opción de recordar
+      if (rememberMe) {
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+        } catch (persistenceError) {
+          console.error('Error setting persistence:', persistenceError);
+        }
+      }
+
+      console.log('Attempting sign in with:', { email, rememberMe });
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Sign in successful:', userCredential);
+      toast.success('Inicio de sesión exitoso');
     } catch (error) {
+      console.error('Full authentication error:', error);
+      
       if (error instanceof FirebaseError) {
         let errorMessage = 'Error al iniciar sesión';
+        console.error('Firebase error code:', error.code);
+        console.error('Firebase error message:', error.message);
+        
         switch (error.code) {
           case 'auth/invalid-email':
             errorMessage = 'El correo electrónico no es válido';
@@ -73,35 +82,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           case 'auth/wrong-password':
             errorMessage = 'La contraseña es incorrecta';
             break;
+          case 'auth/too-many-requests':
+            errorMessage = 'Demasiados intentos fallidos. Por favor, intente más tarde';
+            break;
+          case 'auth/invalid-credential':
+            errorMessage = 'Credenciales inválidas. Por favor, verifica tus datos';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = 'Error de conexión. Por favor, verifica tu conexión a internet';
+            break;
+          case 'auth/invalid-api-key':
+            errorMessage = 'Error de configuración. Por favor, contacta al soporte';
+            break;
           default:
-            errorMessage = 'Error al iniciar sesión';
+            errorMessage = `Error al iniciar sesión: ${error.code}`;
         }
-        toast.error('Error de autenticación', errorMessage);
+        console.error('Translated error message:', errorMessage);
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       } else {
-        toast.error('Error inesperado', 'Ocurrió un error al intentar iniciar sesión');
+        const errorMsg = error instanceof Error 
+          ? `Error inesperado: ${error.message}`
+          : 'Error inesperado al intentar iniciar sesión';
+        console.error('Non-Firebase error:', errorMsg);
+        toast.error(errorMsg);
+        throw new Error(errorMsg);
       }
-      throw error;
     }
   }
 
   async function signUp(email: string, password: string) {
     try {
+      // Validar fortaleza de la contraseña
+      if (password.length < 8) {
+        throw new Error('La contraseña debe tener al menos 8 caracteres');
+      }
+      if (!/[A-Z]/.test(password)) {
+        throw new Error('La contraseña debe contener al menos una letra mayúscula');
+      }
+      if (!/[0-9]/.test(password)) {
+        throw new Error('La contraseña debe contener al menos un número');
+      }
+
       // Crear cuenta de autenticación
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Crear documento en Firestore
-      await setDoc(doc(db, 'developers', userCredential.user.uid), {
-        email: email,
-        name: 'Usuario sin nombre',
-        bio: '',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        portfolio: [],
-        skills: [],
-        socialLinks: []
-      });
+      try {
+        const now = new Date();
+        // Crear documento en Firestore con tokens iniciales
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          email: email,
+          name: 'Usuario sin nombre',
+          createdAt: now,
+          updatedAt: now,
+          plan: 'free',
+          tokens: {
+            remaining: 100,
+            used: 0,
+            total: 100,
+            lastRefill: now,
+            monthlyRefillDate: now,
+            monthlyLimit: 100,
+            updatedAt: now
+          }
+        });
 
-      toast.success('Registro exitoso', 'Tu cuenta ha sido creada');
+        toast.success('Registro exitoso');
+      } catch (error) {
+        // Si falla la creación del documento, eliminar la cuenta de autenticación
+        await userCredential.user.delete();
+        throw error;
+      }
     } catch (error) {
       if (error instanceof FirebaseError) {
         let errorMessage = 'Error al crear la cuenta';
@@ -119,22 +170,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             errorMessage = 'La contraseña es demasiado débil';
             break;
           default:
-            errorMessage = 'Error al crear la cuenta';
+            errorMessage = `Error al crear la cuenta: ${error.code}`;
         }
-        toast.error('Error de registro', errorMessage);
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       } else {
-        toast.error('Error inesperado', 'Ocurrió un error al intentar crear la cuenta');
+        const errorMsg = error instanceof Error 
+          ? error.message 
+          : 'Error inesperado al crear la cuenta';
+        toast.error(errorMsg);
+        throw new Error(errorMsg);
       }
-      throw error;
     }
   }
 
   async function logout() {
     try {
       await signOut(auth);
-      toast.success('Sesión cerrada', 'Has cerrado sesión correctamente');
+      toast.success('Sesión cerrada');
     } catch (error) {
-      toast.error('Error al cerrar sesión', 'No se pudo cerrar la sesión correctamente');
+      toast.error('Error al cerrar sesión');
       throw error;
     }
   }
@@ -142,10 +197,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function resetPassword(email: string) {
     try {
       await sendPasswordResetEmail(auth, email);
-      toast.success(
-        'Correo enviado',
-        'Se ha enviado un correo con instrucciones para restablecer tu contraseña'
-      );
+      toast.success('Se ha enviado un correo con instrucciones para restablecer tu contraseña');
     } catch (error) {
       if (error instanceof FirebaseError) {
         let errorMessage = 'Error al enviar el correo';
@@ -159,12 +211,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           default:
             errorMessage = 'Error al enviar el correo de restablecimiento';
         }
-        toast.error('Error', errorMessage);
+        toast.error(errorMessage);
       } else {
-        toast.error(
-          'Error inesperado',
-          'Ocurrió un error al intentar enviar el correo de restablecimiento'
-        );
+        toast.error('Error inesperado al enviar el correo de restablecimiento');
       }
       throw error;
     }

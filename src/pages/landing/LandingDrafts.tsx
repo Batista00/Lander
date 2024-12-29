@@ -25,7 +25,7 @@ interface DraftPage {
   previewImage?: string;
 }
 
-const LandingDrafts = () => {
+export function LandingDrafts() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [drafts, setDrafts] = useState<DraftPage[]>([]);
@@ -219,6 +219,4 @@ const LandingDrafts = () => {
       </Grid>
     </Box>
   );
-};
-
-export default LandingDrafts;
+}
