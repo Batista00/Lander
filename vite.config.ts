@@ -9,6 +9,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     }
   },
+  optimizeDeps: {
+    include: ['sonner', '@radix-ui/react-tooltip']
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,
@@ -28,6 +31,9 @@ export default defineConfig({
             }
             if (id.includes('firebase')) {
               return 'vendor-firebase';
+            }
+            if (id.includes('sonner')) {
+              return 'vendor-sonner';
             }
             return 'vendor';
           }
