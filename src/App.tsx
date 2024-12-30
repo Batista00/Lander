@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { Login } from './pages/auth/Login';
@@ -6,6 +6,14 @@ import { Register } from './pages/auth/Register';
 import { ResetPassword } from './pages/auth/reset-password';
 import { Dashboard } from './pages/dashboard';
 import { DashboardHome } from './pages/dashboard/DashboardHome';
+import { Builder } from './pages/builder/Builder';
+import { Preview } from './pages/preview/Preview';
+import { Settings } from './pages/dashboard/Settings';
+import { Pricing } from './pages/Pricing';
+import { AboutUs } from './pages/info/AboutUs';
+import { Contact } from './pages/info/Contact';
+import { Documentation } from './pages/info/Documentation';
+import { Help } from './pages/info/Help';
 import { useAuth } from './contexts/AuthContext';
 import { Toaster } from "@/components/ui/toaster";
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -94,6 +102,12 @@ function App() {
             {/* Rutas públicas */}
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
+              <Route path="pricing" element={<Pricing />} />
+              {/* Info pages */}
+              <Route path="about" element={<AboutUs />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="docs" element={<Documentation />} />
+              <Route path="help" element={<Help />} />
               <Route path="auth">
                 <Route path="login" element={
                   <PublicRoute>
